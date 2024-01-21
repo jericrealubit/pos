@@ -1,11 +1,12 @@
 "use client";
 import Image from "next/image";
+import { ModeToggle } from "./ui/toggle-mode";
 
 const Nav = () => {
   return (
     <header>
       <nav>
-        <ul>
+        <ul className="flex items-center justify-between">
           <li>
             <a
               className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
@@ -23,7 +24,9 @@ const Nav = () => {
               />
             </a>
           </li>
-          <li>Toggle Button here</li>
+          <li>
+            <ModeToggle />
+          </li>
         </ul>
       </nav>
     </header>
