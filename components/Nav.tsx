@@ -1,6 +1,23 @@
 "use client";
 import Image from "next/image";
 import { ModeToggle } from "./ui/toggle-mode";
+import { Button } from "./ui/button";
+import Link from "next/link";
+
+const routes = [
+  {
+    href: "/",
+    label: "Products",
+  },
+  {
+    href: "/",
+    label: "Stocks",
+  },
+  {
+    href: "/",
+    label: "Reports",
+  },
+];
 
 const Nav = () => {
   return (
@@ -24,6 +41,13 @@ const Nav = () => {
               />
             </a>
           </li>
+          {routes.map((route, i) => (
+            <Button asChild variant="ghost" key={i}>
+              <Link href={route.href} className="block px-2 py-1 text-lg">
+                {route.label}
+              </Link>
+            </Button>
+          ))}
           <li>
             <ModeToggle />
           </li>
