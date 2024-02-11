@@ -1,4 +1,6 @@
 import Nav from "@/components/Nav";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -21,6 +23,10 @@ interface Recipe {
 
 const getRecipes = async (): Promise<Recipe[]> => {
   const result = await fetch("http://localhost:4000/recipes");
+
+  // delay response
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
   return result.json();
 };
 
@@ -41,6 +47,10 @@ export default async function Home() {
         {recipes.map((recipe) => (
           <Card key={recipe.id}>
             <CardHeader>
+              <Avatar>
+                <AvatarImage src={`/img/${recipe.image}`} alt="recipe img" />
+                <AvatarFallback>{recipe.title.slice(0, 2)}</AvatarFallback>
+              </Avatar>
               <div>
                 <CardTitle>{recipe.title}</CardTitle>
                 <CardDescription>{recipe.time} mins to cook.</CardDescription>
@@ -49,9 +59,9 @@ export default async function Home() {
             <CardContent>
               <p>{recipe.description}</p>
             </CardContent>
-            <CardFooter>
-              <button>View Recipe</button>
-              {recipe.vegan && <p>Vegan!</p>}
+            <CardFooter className="flex justify-between">
+              <Button variant="secondary">View Recipe</Button>
+              {recipe.vegan && <Badge variant="secondary">Vegan!</Badge>}
             </CardFooter>
           </Card>
         ))}
