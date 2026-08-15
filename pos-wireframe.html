@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Counter — POS &amp; Book · Wireframe flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --board:#1E2224;
+  --board-2:#262B2E;
+  --board-3:#2F3538;
+  --paper:#F3F2ED;
+  --wire:#CFCEC7;
+  --wire-2:#E3E2DC;
+  --wire-3:#EDECE6;
+  --ink:#171A1B;
+  --mid:#71767A;
+  --mid-2:#9A9E9F;
+  --tag:#F2622E;
+  --ok:#5B8C6E;
+  --rule:rgba(255,255,255,.10);
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --cond:"Barlow Condensed",Impact,sans-serif;
+  --body:"Inter",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--board);
+  color:var(--paper);
+  font-family:var(--body);
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--tag);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- kit chrome ---------- */
+.kit-head{
+  display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;
+  padding:18px 22px 14px;border-bottom:1px solid var(--rule);
+}
+.kit-mark{font-family:var(--cond);font-weight:700;font-size:26px;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.kit-mark span{color:var(--tag)}
+.kit-sub{font-family:var(--mono);font-size:11px;color:var(--mid-2);letter-spacing:.04em;padding-bottom:2px}
+.kit-tools{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kit-toggle{
+  font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:13px;font-weight:600;
+  padding:7px 12px;border:1px solid var(--rule);border-radius:2px;color:var(--mid-2);
+}
+.kit-toggle[aria-pressed="true"]{border-color:var(--tag);color:var(--tag)}
+.kit-seg{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.kit-seg button{
+  font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:13px;font-weight:600;
+  padding:7px 12px;color:var(--mid-2);
+}
+.kit-seg button[aria-pressed="true"]{background:var(--board-3);color:var(--paper)}
+
+.kit-body{display:grid;grid-template-columns:216px minmax(0,1fr) 300px;gap:0;min-height:calc(100% - 62px)}
+@media (max-width:1180px){
+  .kit-body{grid-template-columns:1fr}
+  .kit-rail,.kit-index{border:0;border-top:1px solid var(--rule)}
+}
+
+/* index */
+.kit-index{border-right:1px solid var(--rule);padding:18px 0 40px;overflow:auto}
+.idx-group{
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--mid);padding:16px 20px 7px;
+}
+.idx-item{
+  display:flex;gap:10px;align-items:baseline;width:100%;text-align:left;
+  padding:7px 20px;font-size:13.5px;color:var(--mid-2);border-left:2px solid transparent;
+}
+.idx-item:hover{color:var(--paper);background:var(--board-2)}
+.idx-item[aria-current="true"]{color:var(--paper);border-left-color:var(--tag);background:var(--board-2)}
+.idx-num{font-family:var(--mono);font-size:10.5px;color:var(--mid)}
+.idx-item[aria-current="true"] .idx-num{color:var(--tag)}
+
+/* stage */
+.kit-stage{padding:26px 24px 60px;display:flex;flex-direction:column;align-items:center;overflow:auto}
+.stage-cap{
+  width:100%;max-width:1180px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:16px;
+}
+.stage-id{font-family:var(--mono);font-size:11px;color:var(--tag);letter-spacing:.08em}
+.stage-title{font-family:var(--cond);font-size:27px;font-weight:600;letter-spacing:.02em;line-height:1}
+.stage-job{font-size:12.5px;color:var(--mid-2);max-width:60ch}
+
+/* device frame */
+.w-frame{
+  background:var(--paper);color:var(--ink);border-radius:16px;position:relative;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);width:100%;
+}
+.w-frame.mobile{max-width:390px;border-radius:26px;padding:0;overflow:hidden}
+.w-frame.wide{max-width:1120px;overflow:hidden}
+.w-frame.forced-narrow{max-width:390px;border-radius:26px}
+.w-scroll{max-height:74vh;overflow:auto}
+.w-frame.mobile .w-scroll{min-height:600px}
+
+/* ---------- wireframe primitives ---------- */
+.w-pad{padding:16px}
+.w-status{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 18px 5px;font-family:var(--mono);font-size:10px;color:var(--mid);
+}
+.w-appbar{
+  display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--wire);
+  background:var(--wire-3);
+}
+.w-appbar .bar-t{font-weight:600;font-size:15px}
+.w-appbar .bar-a{margin-left:auto;font-size:12.5px;color:var(--mid)}
+.w-back{width:22px;height:22px;border:1px solid var(--mid);border-radius:2px;display:grid;place-items:center;font-size:11px;color:var(--mid);flex:none}
+
+.w-h{font-size:17px;font-weight:600;margin:0 0 4px}
+.w-sub{font-size:12.5px;color:var(--mid);margin:0 0 14px;line-height:1.5}
+.w-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--mid);margin:20px 0 8px}
+.w-label:first-child{margin-top:0}
+
+.w-field{margin-bottom:11px}
+.w-field .f-l{font-size:11px;color:var(--mid);margin-bottom:4px;display:block}
+.w-input{
+  height:40px;border:1px solid var(--wire);border-radius:3px;background:#fff;
+  display:flex;align-items:center;padding:0 11px;font-size:13px;color:var(--mid);gap:8px;
+}
+.w-input.tall{height:66px;align-items:flex-start;padding-top:10px}
+.w-input .f-chev{margin-left:auto;color:var(--wire);font-size:10px}
+
+.w-btn{
+  height:44px;border-radius:3px;display:flex;align-items:center;justify-content:center;gap:8px;
+  font-size:14px;font-weight:600;width:100%;margin-bottom:9px;border:1px solid var(--ink);
+  background:var(--ink);color:var(--paper);
+}
+.w-btn.ghost{background:transparent;color:var(--ink);border-color:var(--wire)}
+.w-btn.danger{background:transparent;color:#A8362A;border-color:#A8362A}
+.w-btn.sm{height:32px;font-size:12.5px;width:auto;padding:0 14px;margin:0}
+
+.w-radio{border:1px solid var(--wire);border-radius:3px;overflow:hidden;margin-bottom:12px;background:#fff}
+.w-radio button{display:flex;align-items:center;gap:10px;width:100%;padding:13px 12px;text-align:left;font-size:13.5px}
+.w-radio button + button{border-top:1px solid var(--wire)}
+.w-radio .dot{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--mid);flex:none;display:grid;place-items:center}
+.w-radio button[aria-checked="true"] .dot{border-color:var(--ink)}
+.w-radio button[aria-checked="true"] .dot::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--ink)}
+.w-radio .r-meta{margin-left:auto;font-size:11.5px;color:var(--mid)}
+
+.w-cam{
+  background:#20262A;border-radius:4px;height:230px;position:relative;display:grid;place-items:center;
+  margin-bottom:12px;overflow:hidden;
+}
+.w-cam .retic{width:76%;height:104px;border:2px solid rgba(255,255,255,.75);border-radius:3px;position:relative}
+.w-cam .laser{position:absolute;left:0;right:0;top:50%;height:2px;background:var(--tag)}
+.w-cam .cam-cap{position:absolute;bottom:11px;left:0;right:0;text-align:center;color:#fff;font-size:11px;opacity:.8}
+.w-cam .cam-btns{position:absolute;top:10px;right:10px;display:flex;gap:6px}
+.w-cam .cam-btns i{
+  width:30px;height:30px;border:1px solid rgba(255,255,255,.35);border-radius:3px;display:grid;place-items:center;
+  font-size:10px;color:#fff;font-style:normal;
+}
+
+.w-rows{border:1px solid var(--wire);border-radius:3px;background:#fff;overflow:hidden}
+.w-row{display:flex;align-items:center;gap:11px;padding:11px 12px;width:100%;text-align:left}
+.w-row + .w-row{border-top:1px solid var(--wire-2)}
+.w-row .thumb{width:34px;height:34px;background:var(--wire-2);border-radius:2px;flex:none}
+.w-row .rt{font-size:13.5px;font-weight:500}
+.w-row .rs{font-size:11.5px;color:var(--mid);margin-top:2px}
+.w-row .rm{margin-left:auto;text-align:right;font-size:13px;white-space:nowrap}
+.w-row .rm small{display:block;font-size:11px;color:var(--mid);font-weight:400}
+.w-row .qty{display:flex;align-items:center;gap:7px;margin-left:auto;font-size:12.5px}
+.w-row .qty i{width:24px;height:24px;border:1px solid var(--wire);border-radius:2px;display:grid;place-items:center;font-style:normal;color:var(--mid)}
+
+.w-total{display:flex;justify-content:space-between;padding:11px 12px;font-size:13px;color:var(--mid)}
+.w-total.grand{border-top:1px solid var(--wire);color:var(--ink);font-weight:600;font-size:16px}
+
+.w-tabbar{
+  display:flex;border-top:1px solid var(--wire);background:var(--wire-3);position:sticky;bottom:0;
+}
+.w-tabbar button{flex:1;padding:11px 4px 13px;text-align:center;font-size:11px;color:var(--mid)}
+.w-tabbar button .ti{width:20px;height:20px;border:1.5px solid var(--mid);border-radius:3px;margin:0 auto 5px}
+.w-tabbar button[aria-current="true"]{color:var(--ink);font-weight:600}
+.w-tabbar button[aria-current="true"] .ti{border-color:var(--ink);background:var(--wire-2)}
+
+.w-hint{font-size:11.5px;color:var(--mid);line-height:1.55;margin:10px 0 0;padding-left:11px;border-left:2px solid var(--wire)}
+
+.w-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.w-chip{border:1px solid var(--wire);border-radius:14px;padding:5px 11px;font-size:12px;color:var(--mid);background:#fff}
+.w-chip.on{border-color:var(--ink);color:var(--ink)}
+
+/* admin shell */
+.w-admin{display:grid;grid-template-columns:190px minmax(0,1fr)}
+.w-frame.forced-narrow .w-admin{grid-template-columns:1fr}
+.w-frame.forced-narrow .w-side{display:none}
+.w-side{background:var(--wire-3);border-right:1px solid var(--wire);padding:16px 0;min-height:600px}
+.w-side .s-brand{font-family:var(--cond);font-weight:700;font-size:19px;letter-spacing:.05em;text-transform:uppercase;padding:0 16px 16px}
+.w-side button{display:block;width:100%;text-align:left;padding:9px 16px;font-size:13px;color:var(--mid);border-left:2px solid transparent}
+.w-side button[aria-current="true"]{color:var(--ink);font-weight:600;background:#fff;border-left-color:var(--ink)}
+.w-main{padding:20px;min-width:0}
+.w-topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.w-topbar .tt{font-size:19px;font-weight:600}
+.w-topbar .ta{margin-left:auto;display:flex;gap:8px}
+
+.w-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.w-stat{border:1px solid var(--wire);border-radius:3px;padding:13px;background:#fff}
+.w-stat .sn{font-size:23px;font-weight:600;letter-spacing:-.01em}
+.w-stat .sl{font-size:11px;color:var(--mid);margin-top:3px}
+
+/* data table */
+.w-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:11px}
+.w-search{flex:1;min-width:170px;height:36px;border:1px solid var(--wire);border-radius:3px;background:#fff;display:flex;align-items:center;padding:0 10px;gap:8px}
+.w-search input{border:0;outline:0;font:inherit;font-size:13px;width:100%;background:transparent;color:var(--ink)}
+.w-search input::placeholder{color:var(--mid)}
+.w-sel{height:36px;border:1px solid var(--wire);border-radius:3px;background:#fff;padding:0 10px;font-size:12.5px;color:var(--mid);display:flex;align-items:center;gap:7px}
+
+.w-tablewrap{border:1px solid var(--wire);border-radius:3px;background:#fff;overflow:auto}
+table.w-table{border-collapse:collapse;width:100%;font-size:13px}
+.w-table th{
+  text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--mid);font-weight:400;padding:0;border-bottom:1px solid var(--wire);white-space:nowrap;background:var(--wire-3);
+}
+.w-table th button{display:flex;align-items:center;gap:5px;padding:10px 12px;width:100%;font:inherit;letter-spacing:.11em}
+.w-table th .caret{color:var(--wire);font-size:8px}
+.w-table th[aria-sort] button{color:var(--ink)}
+.w-table th[aria-sort] .caret{color:var(--tag)}
+.w-table td{padding:10px 12px;border-bottom:1px solid var(--wire-2);white-space:nowrap}
+.w-table tr:last-child td{border-bottom:0}
+.w-table tbody tr.clickable:hover{background:var(--wire-3)}
+.w-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.w-table .acts{display:flex;gap:6px;justify-content:flex-end}
+.w-table .acts i{
+  font-style:normal;font-size:11px;color:var(--mid);border:1px solid var(--wire);border-radius:2px;padding:3px 8px;
+}
+.w-pill{border:1px solid var(--wire);border-radius:10px;padding:2px 8px;font-size:11px;color:var(--mid)}
+.w-pill.due{border-color:#C08A56;color:#8A5B2B}
+.w-empty{padding:34px 14px;text-align:center;font-size:13px;color:var(--mid)}
+.w-pager{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--wire);font-size:12px;color:var(--mid);flex-wrap:wrap}
+.w-pager .pg{margin-left:auto;display:flex;gap:4px}
+.w-pager .pg button{border:1px solid var(--wire);border-radius:2px;min-width:28px;height:28px;font-size:12px;color:var(--mid)}
+.w-pager .pg button[aria-current="true"]{border-color:var(--ink);color:var(--ink);font-weight:600}
+
+/* narrow table fallback */
+.w-frame.forced-narrow .w-tablewrap{border:0;background:transparent}
+.w-frame.forced-narrow .w-table thead{display:none}
+.w-frame.forced-narrow .w-table,.w-frame.forced-narrow .w-table tbody,.w-frame.forced-narrow .w-table tr,.w-frame.forced-narrow .w-table td{display:block;width:100%}
+.w-frame.forced-narrow .w-table tr{border:1px solid var(--wire);border-radius:3px;background:#fff;margin-bottom:8px;padding:4px 0}
+.w-frame.forced-narrow .w-table td{border:0;padding:5px 12px;white-space:normal;display:flex;gap:10px}
+.w-frame.forced-narrow .w-table td::before{
+  content:attr(data-l);font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--mid);min-width:82px;padding-top:2px;
+}
+.w-frame.forced-narrow .w-table .num{text-align:left}
+.w-frame.forced-narrow .w-table .acts{justify-content:flex-start}
+
+/* modal */
+.w-scrim{position:absolute;inset:0;background:rgba(23,26,27,.42);display:grid;place-items:center;padding:22px;z-index:5}
+.w-modal{background:#fff;border:1px solid var(--wire);border-radius:4px;padding:18px;max-width:330px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+
+/* hotspots */
+.hot{position:relative;cursor:pointer}
+.xray .hot{outline:1.5px dashed var(--tag);outline-offset:1px;border-radius:2px}
+.xray .hot::after{
+  content:"";position:absolute;inset:0;background:rgba(242,98,46,.08);pointer-events:none;border-radius:2px;
+}
+.pin{
+  position:absolute;top:-9px;right:-9px;width:19px;height:19px;border-radius:50%;background:var(--tag);color:#fff;
+  font-family:var(--mono);font-size:10px;display:grid;place-items:center;z-index:4;box-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+.pinned{position:relative}
+
+/* annotation rail */
+.kit-rail{border-left:1px solid var(--rule);padding:20px 20px 60px;overflow:auto}
+.rail-h{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mid);margin-bottom:14px}
+.note{display:grid;grid-template-columns:22px 1fr;gap:10px;margin-bottom:16px}
+.note-n{
+  width:19px;height:19px;border-radius:50%;border:1px solid var(--tag);color:var(--tag);
+  font-family:var(--mono);font-size:10px;display:grid;place-items:center;margin-top:2px;
+}
+.note-t{font-family:var(--cond);font-size:15px;font-weight:600;letter-spacing:.02em;text-transform:uppercase}
+.note-b{font-size:12.5px;color:var(--mid-2);line-height:1.55;margin-top:2px}
+.rail-foot{border-top:1px solid var(--rule);padding-top:14px;margin-top:22px;font-size:11.5px;color:var(--mid);line-height:1.6}
+.rail-foot b{color:var(--mid-2);font-weight:500}
+
+.stage-nav{display:flex;gap:8px;margin-top:18px;width:100%;max-width:1120px;justify-content:center}
+.stage-nav button{
+  font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:13px;font-weight:600;
+  border:1px solid var(--rule);border-radius:2px;padding:7px 14px;color:var(--mid-2);
+}
+.stage-nav button:hover{color:var(--paper);border-color:var(--mid)}
+</style>
+</head>
+<body>
+
+<header class="kit-head">
+  <div class="kit-mark">Counter<span>.</span></div>
+  <div class="kit-sub">POS + BOOK · CLICKABLE WIREFRAME · 14 SCREENS · v1</div>
+  <div class="kit-tools">
+    <button class="kit-toggle" id="xrayBtn" aria-pressed="false">Show hotspots</button>
+    <div class="kit-seg" role="group" aria-label="Frame width">
+      <button id="wNarrow" aria-pressed="false">Phone</button>
+      <button id="wAuto" aria-pressed="true">Native</button>
+    </div>
+  </div>
+</header>
+
+<div class="kit-body">
+  <nav class="kit-index" id="index" aria-label="Screen index"></nav>
+
+  <main class="kit-stage">
+    <div class="stage-cap">
+      <span class="stage-id" id="capId"></span>
+      <h1 class="stage-title" id="capTitle"></h1>
+      <p class="stage-job" id="capJob"></p>
+    </div>
+    <div id="frameHost" style="width:100%;display:flex;justify-content:center"></div>
+    <div class="stage-nav">
+      <button id="prevBtn">← Previous</button>
+      <button id="nextBtn">Next →</button>
+    </div>
+  </main>
+
+  <aside class="kit-rail">
+    <div class="rail-h">Annotations</div>
+    <div id="notes"></div>
+    <div class="rail-foot" id="railFoot"></div>
+  </aside>
+</div>
+
+<script>
+/* ============ demo data ============ */
+const PRODUCTS = [
+  ["Sunflower oil","Cooking oils","1 L","4.20","6009812340012","In stock"],
+  ["Maize meal","Dry goods","2.5 kg","3.10","6009812340029","In stock"],
+  ["Bar soap","Household","150 g","0.95","6009812340036","Low"],
+  ["Tinned pilchards","Tinned goods","400 g","2.35","6009812340043","In stock"],
+  ["Tea bags","Beverages","100 ct","2.80","6009812340050","In stock"],
+  ["Candles","Household","6 pk","1.40","6009812340067","Out"],
+  ["Rice","Dry goods","5 kg","7.90","6009812340074","In stock"],
+  ["Powdered milk","Dairy","400 g","5.60","6009812340081","Low"],
+  ["Matches","Household","10 bx","0.70","6009812340098","In stock"],
+  ["Sugar beans","Dry goods","1 kg","2.15","6009812340104","In stock"],
+  ["Washing powder","Household","2 kg","6.45","6009812340111","In stock"],
+  ["Cooking salt","Dry goods","1 kg","0.85","6009812340128","In stock"]
+];
+const CUSTOMERS = [
+  ["Grace Mensah","071 448 2210","4","18.40","2 Aug"],
+  ["Joseph Banda","072 903 7741","2","9.15","5 Aug"],
+  ["Amina Yusuf","078 220 4488","7","31.05","28 Jul"],
+  ["Peter Okoye","079 551 0092","1","4.20","9 Aug"],
+  ["Naledi Dube","073 118 6620","3","12.70","6 Aug"],
+  ["Samuel Adeyemi","071 902 3345","5","22.85","31 Jul"],
+  ["Fatima Sow","076 447 1189","2","7.60","8 Aug"],
+  ["Thabo Molefe","074 663 8801","6","26.40","29 Jul"]
+];
+
+/* ============ screens ============ */
+const SCREENS = [
+  {
+    id:"register", group:"Getting in", vp:"mobile",
+    title:"Create account",
+    job:"First run. A new till user registers before anything else in the app is reachable.",
+    blocks:[
+      {t:"status"},
+      {t:"pad", kids:[
+        {t:"h", text:"Create your account"},
+        {t:"sub", text:"Every sale is stamped with the name of the person at the till."},
+        {t:"field", label:"Store name", ph:"Mensah General Store", pin:1, hint:"Prints on receipts and heads the admin panel."},
+        {t:"field", label:"First name", ph:"Grace", pin:2},
+        {t:"field", label:"Last name", ph:"Mensah"},
+        {t:"field", label:"Email", ph:"grace@store.co"},
+        {t:"field", label:"Password", ph:"••••••••", hint:"8 characters minimum"},
+        {t:"btn", label:"Create account", to:"pos-home", pin:3},
+        {t:"btn", label:"I already have an account", variant:"ghost", to:"signin"}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"Store name leads",b:"It sits above the personal fields because it frames what is being created: a store, with a first person in it. Editable afterwards from admin settings — a store gets renamed far more often than a person does."},
+      {n:2,t:"Then the person",b:"First name, last name, email, password, exactly as specced. Anything further (phone, role, till number) belongs in Settings, not in the gate."},
+      {n:3,t:"Straight to the till",b:"Registration lands on the sell screen, not a dashboard. The first thing a new user wants is to ring something up."}
+    ],
+    foot:"Store name creates a second-user problem: if staff member two types the store name again, you get two stores. Recommend the first registration creates the store and everyone after joins by invite link or code — and does not see this field at all."
+  },
+  {
+    id:"signin", group:"Getting in", vp:"mobile",
+    title:"Sign in",
+    job:"Returning user. Kept deliberately thin so a shift change takes seconds.",
+    blocks:[
+      {t:"status"},
+      {t:"pad", kids:[
+        {t:"h", text:"Sign in"},
+        {t:"sub", text:"Mensah General Store"},
+        {t:"field", label:"Email", ph:"grace@store.co"},
+        {t:"field", label:"Password", ph:"••••••••"},
+        {t:"btn", label:"Sign in", to:"pos-home"},
+        {t:"btn", label:"Create an account", variant:"ghost", to:"register"},
+        {t:"hint", text:"Shift changes happen mid-queue. Consider a 4-digit till PIN for switching users once signed in on the device."}
+      ]}
+    ],
+    notes:[
+      {n:0,t:"Session length",b:"A till device stays signed in all day. Decide whether the session expires nightly or on inactivity — the wireframe assumes nightly."}
+    ]
+  },
+  {
+    id:"pos-home", group:"Selling", vp:"mobile",
+    title:"New sale",
+    job:"The resting state of the app. One dominant action: start scanning.",
+    blocks:[
+      {t:"status"},
+      {t:"appbar", title:"New sale", right:"Grace M."},
+      {t:"pad", kids:[
+        {t:"h", text:"Nothing scanned yet"},
+        {t:"sub", text:"Scan the first item to open a sale."},
+        {t:"btn", label:"▣  Start barcode reader", to:"pos-scan", pin:1},
+        {t:"btn", label:"Enter barcode by hand", variant:"ghost", to:"pos-scan", pin:2},
+        {t:"hint", text:"A plugged-in USB or Bluetooth scanner types into the app like a keyboard. Keep a hidden input focused on this screen so a hardware scan starts a sale without anyone pressing anything."},
+        {t:"label", text:"Earlier today"},
+        {t:"rows", items:[
+          {title:"Sale #0148 · 6 items", sub:"11:22 · Paid", meta:"24.60"},
+          {title:"Sale #0147 · 2 items", sub:"11:09 · Book — A. Yusuf", meta:"7.35"},
+          {title:"Sale #0146 · 1 item", sub:"10:54 · Paid", meta:"4.20"}
+        ]}
+      ]},
+      {t:"tabbar", active:"Sell", items:[
+        {label:"Sell"},{label:"Book", to:"adm-customers"},{label:"Admin", to:"adm-dash"}
+      ], pin:3}
+    ],
+    notes:[
+      {n:1,t:"One button owns the screen",b:"The camera path and the hardware-scanner path both end here. Everything else on this screen is secondary."},
+      {n:2,t:"Hand entry is not a fallback",b:"Torn labels and loose produce are daily, not rare. Manual barcode entry is a first-class route to the same place."},
+      {n:3,t:"Three destinations only",b:"Sell, Book, Admin. Admin hides for non-admin users, leaving two."}
+    ],
+    foot:"Should a part-finished sale survive an app reload? Recommend yes — hold the cart locally until it is completed or voided."
+  },
+  {
+    id:"pos-scan", group:"Selling", vp:"mobile",
+    title:"Scanning",
+    job:"Camera live, cart building underneath. The cashier never leaves this screen until the basket is empty.",
+    blocks:[
+      {t:"status"},
+      {t:"appbar", back:true, backTo:"pos-home", title:"Scanning", right:"3 items"},
+      {t:"pad", kids:[
+        {t:"cam", pin:1},
+        {t:"input", label:"Or type the barcode", ph:"6009812340…", pin:2},
+        {t:"label", text:"In this sale"},
+        {t:"rows", items:[
+          {title:"Sunflower oil · 1 L", sub:"6009812340012", qty:true, meta:"4.20"},
+          {title:"Maize meal · 2.5 kg", sub:"6009812340029", qty:true, meta:"3.10"},
+          {title:"Bar soap · 150 g", sub:"6009812340036", qty:true, meta:"0.95"}
+        ], pin:3},
+        {t:"hint", text:"Empty state: “Point the camera at a barcode.” Unknown barcode: “Not in your products — add it now?” with a shortcut into the admin product form."},
+        {t:"btn", label:"Done — 3 items · 8.25", to:"pos-cart", pin:4}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"Camera or hardware, same screen",b:"The viewfinder is the phone path. A handheld reader fires the identical add-to-cart. Torch and front/rear switch sit top right — shop lighting is bad more often than not."},
+      {n:2,t:"Keyboard stays available",b:"Typing a barcode adds the item without closing the camera."},
+      {n:3,t:"Correct in place",b:"Wrong quantity or double scan gets fixed here with the steppers, not on a later review screen. Swipe a row to void it."},
+      {n:4,t:"Done carries the numbers",b:"Item count and running total live on the button so the cashier can read the sale without looking away."}
+    ],
+    foot:"Duplicate scan of the same barcode should increment quantity, not add a second line. Feedback on every successful scan: a short beep plus a flash of the new row."
+  },
+  {
+    id:"pos-cart", group:"Selling", vp:"mobile",
+    title:"Summary & payment",
+    job:"Read the total aloud, take the money — or put it in the book.",
+    blocks:[
+      {t:"status"},
+      {t:"appbar", back:true, backTo:"pos-scan", title:"Sale summary"},
+      {t:"pad", kids:[
+        {t:"rows", items:[
+          {title:"Sunflower oil · 1 L", sub:"1 × 4.20", meta:"4.20"},
+          {title:"Maize meal · 2.5 kg", sub:"1 × 3.10", meta:"3.10"},
+          {title:"Bar soap · 150 g", sub:"1 × 0.95", meta:"0.95"}
+        ], totals:[["3 items","8.25"]], grand:["Total","8.25"], pin:1},
+        {t:"btn", label:"+ Scan another item", variant:"ghost", to:"pos-scan"},
+        {t:"label", text:"How is this being settled?"},
+        {t:"radio", pin:2, options:[
+          {label:"Paid", meta:"Cash or card now", checked:true},
+          {label:"Pay later", meta:"Goes in the book", to:"pos-later"}
+        ]},
+        {t:"btn", label:"Complete sale", to:"pos-done", pin:3}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"Summary is the receipt preview",b:"Same lines, same order, same totals the customer will be handed. No surprises between screens."},
+      {n:2,t:"Two states, one control",b:"Paid is preselected because it is the overwhelming majority. Choosing Pay later routes to the name step instead of completing."},
+      {n:3,t:"The button label changes with the choice",b:"“Complete sale” under Paid becomes “Save to book” under Pay later. The word on the button always describes what actually happens."}
+    ],
+    foot:"Not in scope yet, worth a decision: line discounts, price overrides, and voiding a whole sale."
+  },
+  {
+    id:"pos-later", group:"Selling", vp:"mobile",
+    title:"Put it in the book",
+    job:"Attach the unpaid sale to a person. Matching an existing customer matters more than typing a new one.",
+    blocks:[
+      {t:"status"},
+      {t:"appbar", back:true, backTo:"pos-cart", title:"Pay later"},
+      {t:"pad", kids:[
+        {t:"h", text:"Whose book?"},
+        {t:"sub", text:"8.25 across 3 items"},
+        {t:"input", label:"Customer name", ph:"Start typing a name…", pin:1},
+        {t:"label", text:"Matches"},
+        {t:"rows", items:[
+          {title:"Grace Mensah", sub:"071 448 2210 · owes 18.40", meta:"Select", to:"pos-done"},
+          {title:"Grace Owusu", sub:"074 220 9911 · owes 0.00", meta:"Select", to:"pos-done"}
+        ], pin:2},
+        {t:"btn", label:"+ New customer — “Grace”", variant:"ghost", to:"pos-done", pin:3},
+        {t:"hint", text:"New customer needs a name only. A phone number is optional but is the one field that makes chasing a balance possible later."},
+        {t:"btn", label:"Save to book", to:"pos-done"}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"Search and create in one field",b:"The cashier types a name once. Existing customers surface as they type; if nobody matches, the same text becomes the new record."},
+      {n:2,t:"Show the balance while choosing",b:"Two customers share a first name often enough. The outstanding amount and phone number disambiguate, and they also warn the cashier before adding to a large debt."},
+      {n:3,t:"New records stay cheap",b:"Forcing a full form here would slow a queue. Extra detail can be filled in from the admin customer page."}
+    ],
+    foot:"Decide: is there a limit on what one customer can owe, and does crossing it warn the cashier or block the sale? The wireframe assumes a soft warning."
+  },
+  {
+    id:"pos-done", group:"Selling", vp:"mobile",
+    title:"Sale complete",
+    job:"Confirm, offer the receipt, and get out of the way fast.",
+    blocks:[
+      {t:"status"},
+      {t:"pad", kids:[
+        {t:"h", text:"Saved to Grace Mensah's book"},
+        {t:"sub", text:"Sale #0149 · 8.25 · 3 items · 11:41"},
+        {t:"rows", items:[
+          {title:"New balance", sub:"Was 18.40", meta:"26.65"}
+        ], pin:1},
+        {t:"btn", label:"Print receipt", variant:"ghost"},
+        {t:"btn", label:"Text receipt to 071 448 2210", variant:"ghost"},
+        {t:"btn", label:"Start next sale", to:"pos-home", pin:2},
+        {t:"hint", text:"After a Paid sale this screen instead shows change due, then the same two receipt options."}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"State the consequence",b:"The number that changed is the customer's balance, so that is the number on screen — not a generic tick."},
+      {n:2,t:"Next sale is the default",b:"Auto-returning to the till after a few seconds is tempting; don't. The cashier may still be reading the balance aloud."}
+    ]
+  },
+  {
+    id:"adm-dash", group:"Admin", vp:"wide",
+    title:"Overview",
+    job:"Answer the two questions the owner asks daily: what came in, and what is still owed.",
+    blocks:[
+      {t:"admin", nav:"Overview", kids:[
+        {t:"topbar", title:"Overview", actions:[{label:"Today ▾"}]},
+        {t:"stats", items:[
+          ["148.90","Taken today"],{},
+          ["31","Sales today"],
+          ["132.15","Outstanding in the book"],
+          ["8","Customers owing"]
+        ], pin:1},
+        {t:"label", text:"Oldest unpaid"},
+        {t:"table", id:"dashDue",
+          cols:[{k:0,label:"Customer"},{k:1,label:"Items",align:"num"},{k:2,label:"Owed",align:"num"},{k:3,label:"Since"}],
+          rows:[["Amina Yusuf","7","31.05","28 Jul"],["Thabo Molefe","6","26.40","29 Jul"],["Samuel Adeyemi","5","22.85","31 Jul"],["Grace Mensah","4","18.40","2 Aug"]],
+          rowTo:"adm-customer", perPage:4, noTools:true, pin:2}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"Four numbers, no chart",b:"Takings, sale count, total owed, people owing. A graph here would decorate rather than inform at this store's volume."},
+      {n:2,t:"Sorted by age, not size",b:"The oldest debt is the one at risk, so age leads. Any column can still be sorted."}
+    ],
+    foot:"Overview is an addition to your spec — say the word and it comes out, with Products becoming the admin landing page."
+  },
+  {
+    id:"adm-products", group:"Admin", vp:"wide",
+    title:"Products",
+    job:"The working list. Sort, filter, page — and the two rows of controls that make that possible.",
+    blocks:[
+      {t:"admin", nav:"Products", kids:[
+        {t:"topbar", title:"Products", actions:[{label:"+ Add product", to:"adm-add", primary:true}], pin:1},
+        {t:"table", id:"prodTable",
+          cols:[{k:0,label:"Product"},{k:1,label:"Category"},{k:2,label:"Size"},{k:3,label:"Price",align:"num"},{k:4,label:"Barcode"},{k:5,label:"Stock"},{k:-1,label:"",acts:true}],
+          rows:PRODUCTS, rowTo:"adm-edit", perPage:6,
+          filters:[{label:"All categories"},{label:"All stock"}], searchPh:"Search name or barcode",
+          pin:2, pinPager:3}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"Add sits with the list",b:"Adding a product is nearly always prompted by looking at the list and finding a gap."},
+      {n:2,t:"Sortable, filterable, live",b:"Click any header to sort — it works in this mockup. Search matches name and barcode together, since staff know products by whichever is nearer to hand."},
+      {n:3,t:"Paging stays visible",b:"Row count and page controls anchored to the table, not floating at the bottom of the page. Try the Phone toggle above: the table becomes a card stack, no horizontal scrolling."}
+    ],
+    foot:"Row click opens Edit. Delete is deliberately not on the row — see the next screens."
+  },
+  {
+    id:"adm-add", group:"Admin", vp:"wide",
+    title:"Add product",
+    job:"Six fields from your spec, with the barcode captured by the same reader used at the till.",
+    blocks:[
+      {t:"admin", nav:"Products", kids:[
+        {t:"topbar", title:"Add product", actions:[{label:"Cancel", to:"adm-products"},{label:"Save product", to:"adm-products", primary:true}]},
+        {t:"form2", left:[
+          {t:"field", label:"Product name", ph:"Sunflower oil"},
+          {t:"field", label:"Description", ph:"Refined, for frying and salads", tall:true},
+          {t:"field", label:"Size", ph:"1 L", pin:2},
+          {t:"field", label:"Price", ph:"4.20"}
+        ], right:[
+          {t:"field", label:"Barcode", ph:"6009812340012", scan:true, pin:1},
+          {t:"field", label:"Category", ph:"Select a category", select:true, pin:3},
+          {t:"hint", text:"Duplicate barcodes must be refused on save — two products sharing one code makes every scan ambiguous."}
+        ]}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"Scan to fill",b:"The button beside the barcode field opens the same reader as the till. Typing a 13-digit number by hand is where errors come from."},
+      {n:2,t:"Size is text, not a number",b:"“2.5 kg”, “6 pk”, “100 ct” — a free text field with the unit included beats a number-and-unit pair."},
+      {n:3,t:"Categories are managed, not typed",b:"A dropdown backed by an editable list. Free text would fragment into Household / household / house hold within a week."}
+    ],
+    foot:"Two-column on desktop, single column stacked on a phone — order is name, description, size, price, barcode, category."
+  },
+  {
+    id:"adm-edit", group:"Admin", vp:"wide",
+    title:"Edit product",
+    job:"Same form, filled in, plus the one destructive action.",
+    blocks:[
+      {t:"admin", nav:"Products", kids:[
+        {t:"topbar", title:"Sunflower oil", actions:[{label:"Cancel", to:"adm-products"},{label:"Save changes", to:"adm-products", primary:true}]},
+        {t:"form2", left:[
+          {t:"field", label:"Product name", ph:"Sunflower oil", filled:true},
+          {t:"field", label:"Description", ph:"Refined, for frying and salads", tall:true, filled:true},
+          {t:"field", label:"Size", ph:"1 L", filled:true},
+          {t:"field", label:"Price", ph:"4.20", filled:true, pin:1}
+        ], right:[
+          {t:"field", label:"Barcode", ph:"6009812340012", scan:true, filled:true},
+          {t:"field", label:"Category", ph:"Cooking oils", select:true, filled:true},
+          {t:"label", text:"Danger zone"},
+          {t:"btn", label:"Delete this product", variant:"danger", to:"adm-delete", pin:2}
+        ]}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"Price edits are historical",b:"Changing a price must not rewrite what past sales charged. Sale lines store the price at the time of sale."},
+      {n:2,t:"Delete lives inside the record",b:"Not a bin icon on a list row, where a mistap costs a product. Reaching delete requires opening the thing you intend to delete."}
+    ]
+  },
+  {
+    id:"adm-delete", group:"Admin", vp:"wide",
+    title:"Delete confirmation",
+    job:"The stop before a product disappears — and the reason it usually shouldn't.",
+    blocks:[
+      {t:"admin", nav:"Products", kids:[
+        {t:"topbar", title:"Products", actions:[{label:"+ Add product", primary:true}]},
+        {t:"table", id:"prodTable2",
+          cols:[{k:0,label:"Product"},{k:1,label:"Category"},{k:3,label:"Price",align:"num"},{k:5,label:"Stock"}],
+          rows:PRODUCTS, perPage:5, noTools:true}
+      ]},
+      {t:"modal", pin:1, kids:[
+        {t:"h", text:"Delete Sunflower oil?"},
+        {t:"sub", text:"It appears in 38 past sales. Those receipts keep their line and price, but the product stops being scannable."},
+        {t:"btn", label:"Delete product", variant:"danger", to:"adm-products"},
+        {t:"btn", label:"Keep it, hide from the till", variant:"ghost", to:"adm-products", pin:2},
+        {t:"btn", label:"Cancel", variant:"ghost", to:"adm-products"}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"Name the consequence, not the risk",b:"“This cannot be undone” tells nobody anything. The count of affected sales does."},
+      {n:2,t:"Offer the thing they usually meant",b:"Most deletes are really “stop selling this.” Archiving keeps sales history intact, so make it the easy middle option."}
+    ],
+    foot:"Recommendation: soft-delete everywhere. A product referenced by any sale is archived rather than removed."
+  },
+  {
+    id:"adm-customers", group:"The book", vp:"wide",
+    title:"Pay-later customers",
+    job:"Everyone who owes, sorted by whatever the owner is worried about today.",
+    blocks:[
+      {t:"admin", nav:"Customers", kids:[
+        {t:"topbar", title:"The book", actions:[{label:"Export"},{label:"+ Add customer", primary:true}]},
+        {t:"stats", items:[["132.15","Total outstanding"],["8","Customers owing"],["15 days","Oldest debt"]]},
+        {t:"table", id:"custTable",
+          cols:[{k:0,label:"Customer"},{k:1,label:"Phone"},{k:2,label:"Items",align:"num"},{k:3,label:"Owed",align:"num"},{k:4,label:"Oldest"}],
+          rows:CUSTOMERS, rowTo:"adm-customer", perPage:5,
+          filters:[{label:"Owing only"},{label:"Any age"}], searchPh:"Search customer name",
+          pin:1}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"The same table, different content",b:"One table component across products and customers: sortable headers, search, filters, pager. Building it once is the difference between two weeks and four."}
+    ],
+    foot:"Reachable from the till tab bar as well as admin — a cashier needs to check a balance without being an admin."
+  },
+  {
+    id:"adm-customer", group:"The book", vp:"wide",
+    title:"Customer account",
+    job:"The itemised list behind one name, and the act of settling it.",
+    blocks:[
+      {t:"admin", nav:"Customers", kids:[
+        {t:"topbar", title:"Grace Mensah", actions:[{label:"Edit"},{label:"Record a payment", to:"adm-customers", primary:true}]},
+        {t:"stats", items:[["26.65","Owed now"],["4","Unpaid sales"],["2 Aug","Oldest unpaid"]], pin:1},
+        {t:"label", text:"Unpaid items"},
+        {t:"table", id:"acctTable",
+          cols:[{k:0,label:"Date"},{k:1,label:"Item"},{k:2,label:"Qty",align:"num"},{k:3,label:"Price",align:"num"},{k:4,label:"Sale"}],
+          rows:[
+            ["11 Aug","Sunflower oil · 1 L","1","4.20","#0149"],
+            ["11 Aug","Maize meal · 2.5 kg","1","3.10","#0149"],
+            ["11 Aug","Bar soap · 150 g","1","0.95","#0149"],
+            ["6 Aug","Rice · 5 kg","1","7.90","#0131"],
+            ["6 Aug","Tea bags · 100 ct","1","2.80","#0131"],
+            ["2 Aug","Washing powder · 2 kg","1","6.45","#0118"],
+            ["2 Aug","Candles · 6 pk","1","1.40","#0118"]
+          ], perPage:5, searchPh:"Search items", pin:2}
+      ]}
+    ],
+    notes:[
+      {n:1,t:"One number people argue about",b:"The balance is the top-left figure and it is the largest thing on the page, because it is what gets disputed at the counter."},
+      {n:2,t:"Itemised, and grouped by sale",b:"Not a list of lump sums. When someone questions a balance, the answer is the line and the date it was taken."}
+    ],
+    foot:"Partial payments are the normal case, not the exception — “Record a payment” takes any amount and settles the oldest lines first."
+  }
+];
+
+/* ============ render ============ */
+const $ = s => document.querySelector(s);
+let current = 0, xray = false, forceNarrow = false;
+const tstate = {};
+
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
+function hot(node, to){ if(!to) return node; node.classList.add("hot"); node.setAttribute("role","link"); node.tabIndex=0;
+  const go=e=>{e.preventDefault();e.stopPropagation();goTo(to);};
+  node.addEventListener("click",go);
+  node.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" ")go(e);});
+  return node; }
+function pin(node, n){ if(!n) return node; node.classList.add("pinned"); node.appendChild(el("span","pin",String(n))); return node; }
+
+function block(b){
+  let n;
+  switch(b.t){
+    case "status":
+      n = el("div","w-status","<span>9:41</span><span>▮▮▮  ▲  ▮</span>"); break;
+    case "pad":
+      n = el("div","w-pad"); b.kids.forEach(k=>n.appendChild(block(k))); break;
+    case "appbar":
+      n = el("div","w-appbar");
+      if(b.back){ const bk=el("div","w-back","‹"); hot(bk,b.backTo); n.appendChild(bk); }
+      n.appendChild(el("div","bar-t",b.title));
+      if(b.right) n.appendChild(el("div","bar-a",b.right));
+      break;
+    case "h": n = el("h2","w-h",b.text); break;
+    case "sub": n = el("p","w-sub",b.text); break;
+    case "label": n = el("div","w-label",b.text); break;
+    case "hint": n = el("p","w-hint",b.text); break;
+    case "field":
+    case "input": {
+      n = el("div","w-field");
+      if(b.label) n.appendChild(el("span","f-l",b.label));
+      const i = el("div","w-input"+(b.tall?" tall":""));
+      i.appendChild(el("span",null,b.ph));
+      if(b.select) i.appendChild(el("span","f-chev","▾"));
+      if(b.scan){ const s=el("span","w-btn sm ghost","▣ Scan"); s.style.marginLeft="auto"; i.appendChild(s); }
+      if(b.filled) i.style.color="var(--ink)";
+      n.appendChild(i);
+      if(b.hint) n.appendChild(el("p","w-hint",b.hint));
+      break;
+    }
+    case "btn":
+      n = el("div","w-btn"+(b.variant?" "+b.variant:""), b.label);
+      hot(n,b.to); break;
+    case "radio":
+      n = el("div","w-radio");
+      b.options.forEach(o=>{
+        const r = el("button");
+        r.setAttribute("aria-checked", o.checked?"true":"false");
+        r.setAttribute("role","radio");
+        r.appendChild(el("span","dot"));
+        r.appendChild(el("span",null,o.label));
+        if(o.meta) r.appendChild(el("span","r-meta",o.meta));
+        if(o.to) hot(r,o.to);
+        n.appendChild(r);
+      });
+      break;
+    case "cam":
+      n = el("div","w-cam");
+      n.innerHTML = '<div class="retic"><div class="laser"></div></div>'+
+        '<div class="cam-btns"><i>☀</i><i>⟳</i></div>'+
+        '<div class="cam-cap">Line the barcode up inside the frame</div>';
+      break;
+    case "rows": {
+      n = el("div","w-rows");
+      b.items.forEach(it=>{
+        const r = el("div","w-row");
+        if(it.thumb!==false) r.appendChild(el("div","thumb"));
+        const c = el("div"); c.appendChild(el("div","rt",it.title));
+        if(it.sub) c.appendChild(el("div","rs",it.sub));
+        r.appendChild(c);
+        if(it.qty){ const q=el("div","qty"); q.innerHTML='<i>−</i><span>1</span><i>+</i>'; r.appendChild(q); }
+        if(it.meta){ const m=el("div","rm",it.meta); r.appendChild(m); }
+        hot(r,it.to);
+        n.appendChild(r);
+      });
+      (b.totals||[]).forEach(t=>{ const x=el("div","w-total"); x.innerHTML=`<span>${t[0]}</span><span>${t[1]}</span>`; n.appendChild(x); });
+      if(b.grand){ const g=el("div","w-total grand"); g.innerHTML=`<span>${b.grand[0]}</span><span>${b.grand[1]}</span>`; n.appendChild(g); }
+      break;
+    }
+    case "tabbar":
+      n = el("div","w-tabbar");
+      b.items.forEach(it=>{
+        const t = el("button");
+        t.innerHTML = `<div class="ti"></div>${it.label}`;
+        if(it.label===b.active) t.setAttribute("aria-current","true");
+        hot(t,it.to);
+        n.appendChild(t);
+      });
+      break;
+    case "chips":
+      n = el("div","w-chips");
+      b.items.forEach((c,i)=>n.appendChild(el("span","w-chip"+(i===0?" on":""),c)));
+      break;
+    case "stats":
+      n = el("div","w-stats");
+      b.items.forEach(s=>{ if(!s || !s.length) return;
+        const c=el("div","w-stat"); c.appendChild(el("div","sn",s[0])); c.appendChild(el("div","sl",s[1])); n.appendChild(c); });
+      break;
+    case "topbar":
+      n = el("div","w-topbar");
+      n.appendChild(el("div","tt",b.title));
+      { const a=el("div","ta");
+        (b.actions||[]).forEach(x=>{ const btn=el("div","w-btn sm"+(x.primary?"":" ghost"),x.label); hot(btn,x.to); a.appendChild(btn); });
+        n.appendChild(a); }
+      break;
+    case "form2": {
+      n = el("div");
+      n.style.cssText="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;max-width:820px";
+      const L=el("div"), R=el("div");
+      b.left.forEach(k=>L.appendChild(block(k)));
+      b.right.forEach(k=>R.appendChild(block(k)));
+      n.appendChild(L); n.appendChild(R);
+      break;
+    }
+    case "admin": {
+      n = el("div","w-admin");
+      const side = el("div","w-side");
+      side.appendChild(el("div","s-brand","Mensah<br>General Store"));
+      [["Overview","adm-dash"],["Products","adm-products"],["Customers","adm-customers"],["Back to till","pos-home"]].forEach(([l,to])=>{
+        const s = el("button",null,l);
+        if(l===b.nav) s.setAttribute("aria-current","true");
+        hot(s,to); side.appendChild(s);
+      });
+      n.appendChild(side);
+      const main = el("div","w-main");
+      b.kids.forEach(k=>main.appendChild(block(k)));
+      n.appendChild(main);
+      break;
+    }
+    case "modal": {
+      n = el("div","w-scrim");
+      const m = el("div","w-modal");
+      b.kids.forEach(k=>m.appendChild(block(k)));
+      n.appendChild(m);
+      break;
+    }
+    case "table": n = table(b); break;
+    default: n = el("div");
+  }
+  if(b.pin) pin(n,b.pin);
+  return n;
+}
+
+function table(b){
+  const st = tstate[b.id] || (tstate[b.id]={sort:null,dir:1,q:"",page:0});
+  const wrap = el("div");
+
+  if(!b.noTools){
+    const tb = el("div","w-toolbar");
+    const s = el("div","w-search");
+    s.innerHTML = '<span style="color:var(--mid);font-size:12px">⌕</span>';
+    const inp = el("input");
+    inp.placeholder = b.searchPh || "Search";
+    inp.value = st.q;
+    inp.addEventListener("input", e=>{ st.q=e.target.value; st.page=0; redrawTable(b); });
+    s.appendChild(inp);
+    tb.appendChild(s);
+    (b.filters||[]).forEach(f=>{ const d=el("div","w-sel"); d.innerHTML=`<span>${f.label}</span><span style="color:var(--wire);font-size:9px">▾</span>`; tb.appendChild(d); });
+    wrap.appendChild(tb);
+  }
+
+  const host = el("div","w-tablewrap");
+  host.id = "tw-"+b.id;
+  wrap.appendChild(host);
+  paint(host,b,st);
+  return wrap;
+}
+
+function redrawTable(b){
+  const host = document.getElementById("tw-"+b.id);
+  if(host) paint(host, b, tstate[b.id]);
+}
+
+function paint(host,b,st){
+  host.innerHTML="";
+  let rows = b.rows.slice();
+  if(st.q){
+    const q = st.q.toLowerCase();
+    rows = rows.filter(r => r.some(c => String(c).toLowerCase().includes(q)));
+  }
+  if(st.sort!=null){
+    rows.sort((x,y)=>{
+      const a=x[st.sort], c=y[st.sort];
+      const na=parseFloat(String(a).replace(/[^\d.-]/g,"")), nc=parseFloat(String(c).replace(/[^\d.-]/g,""));
+      const both = !isNaN(na)&&!isNaN(nc)&&/^[\d.\s-]+$/.test(String(a));
+      return (both ? na-nc : String(a).localeCompare(String(c))) * st.dir;
+    });
+  }
+  const per = b.perPage || 6;
+  const pages = Math.max(1, Math.ceil(rows.length/per));
+  if(st.page>=pages) st.page=pages-1;
+  const view = rows.slice(st.page*per, st.page*per+per);
+
+  const t = el("table","w-table");
+  const thead = el("thead"), tr = el("tr");
+  b.cols.forEach(c=>{
+    const th = el("th");
+    if(c.acts){ th.innerHTML='<span style="display:block;padding:10px 12px">&nbsp;</span>'; tr.appendChild(th); return; }
+    if(st.sort===c.k) th.setAttribute("aria-sort", st.dir===1?"ascending":"descending");
+    const btn = el("button");
+    btn.innerHTML = `<span>${c.label}</span><span class="caret">${st.sort===c.k ? (st.dir===1?"▲":"▼") : "▲▼"}</span>`;
+    btn.addEventListener("click", ()=>{
+      if(st.sort===c.k) st.dir = -st.dir; else { st.sort=c.k; st.dir=1; }
+      st.page=0; paint(host,b,st);
+    });
+    th.appendChild(btn); tr.appendChild(th);
+  });
+  thead.appendChild(tr); t.appendChild(thead);
+
+  const tb = el("tbody");
+  if(!view.length){
+    const r=el("tr"), td=el("td");
+    td.colSpan=b.cols.length;
+    td.appendChild(el("div","w-empty","No matches. Clear the search to see everything again."));
+    r.appendChild(td); tb.appendChild(r);
+  }
+  view.forEach(row=>{
+    const r = el("tr");
+    if(b.rowTo){ r.classList.add("clickable"); hot(r,b.rowTo); }
+    b.cols.forEach(c=>{
+      const td = el("td", c.align==="num"?"num":null);
+      td.setAttribute("data-l", c.label||"");
+      if(c.acts){
+        const a=el("div","acts"); a.innerHTML="<i>Edit</i>"; td.appendChild(a);
+      } else {
+        const v = row[c.k];
+        if(c.label==="Stock"){ const p=el("span","w-pill"+(v!=="In stock"?" due":""),v); td.appendChild(p); }
+        else td.textContent = v;
+      }
+      r.appendChild(td);
+    });
+    tb.appendChild(r);
+  });
+  t.appendChild(tb);
+  host.appendChild(t);
+
+  const pg = el("div","w-pager");
+  const from = rows.length ? st.page*per+1 : 0;
+  pg.appendChild(el("span",null,`${from}–${Math.min(rows.length,(st.page+1)*per)} of ${rows.length}`));
+  pg.appendChild(el("span",null,"· Rows per page: "+per));
+  const nav = el("div","pg");
+  const prev = el("button",null,"‹"); prev.addEventListener("click",()=>{ if(st.page>0){st.page--;paint(host,b,st);} }); nav.appendChild(prev);
+  for(let i=0;i<pages;i++){
+    const p = el("button",null,String(i+1));
+    if(i===st.page) p.setAttribute("aria-current","true");
+    p.addEventListener("click",()=>{ st.page=i; paint(host,b,st); });
+    nav.appendChild(p);
+  }
+  const next = el("button",null,"›"); next.addEventListener("click",()=>{ if(st.page<pages-1){st.page++;paint(host,b,st);} }); nav.appendChild(next);
+  pg.appendChild(nav);
+  host.appendChild(pg);
+  if(b.pinPager) pin(pg, b.pinPager);
+}
+
+function renderIndex(){
+  const host = $("#index"); host.innerHTML="";
+  let g=null;
+  SCREENS.forEach((s,i)=>{
+    if(s.group!==g){ g=s.group; host.appendChild(el("div","idx-group",g)); }
+    const b = el("button","idx-item");
+    b.innerHTML = `<span class="idx-num">${String(i+1).padStart(2,"0")}</span><span>${s.title}</span>`;
+    if(i===current) b.setAttribute("aria-current","true");
+    b.addEventListener("click",()=>{ current=i; render(); });
+    host.appendChild(b);
+  });
+}
+
+function render(){
+  const s = SCREENS[current];
+  $("#capId").textContent = String(current+1).padStart(2,"0")+" / "+SCREENS.length;
+  $("#capTitle").textContent = s.title;
+  $("#capJob").textContent = s.job;
+
+  const frame = el("div","w-frame "+s.vp+(forceNarrow?" forced-narrow":"")+(xray?" xray":""));
+  const scroll = el("div","w-scroll");
+  s.blocks.forEach(b=>scroll.appendChild(block(b)));
+  frame.appendChild(scroll);
+  const host = $("#frameHost"); host.innerHTML=""; host.appendChild(frame);
+
+  const notes = $("#notes"); notes.innerHTML="";
+  (s.notes||[]).forEach(nt=>{
+    const d = el("div","note");
+    d.appendChild(el("div","note-n", nt.n ? String(nt.n) : "·"));
+    const c = el("div");
+    c.appendChild(el("div","note-t",nt.t));
+    c.appendChild(el("div","note-b",nt.b));
+    d.appendChild(c);
+    notes.appendChild(d);
+  });
+  $("#railFoot").innerHTML = s.foot ? "<b>Open question</b><br>"+s.foot : "";
+  renderIndex();
+  window.scrollTo({top:0,behavior:"instant"});
+}
+
+function goTo(id){
+  const i = SCREENS.findIndex(s=>s.id===id);
+  if(i>-1){ current=i; render(); }
+}
+
+$("#xrayBtn").addEventListener("click", e=>{
+  xray = !xray;
+  e.currentTarget.setAttribute("aria-pressed", String(xray));
+  e.currentTarget.textContent = xray ? "Hide hotspots" : "Show hotspots";
+  render();
+});
+$("#wNarrow").addEventListener("click", ()=>{ forceNarrow=true; $("#wNarrow").setAttribute("aria-pressed","true"); $("#wAuto").setAttribute("aria-pressed","false"); render(); });
+$("#wAuto").addEventListener("click", ()=>{ forceNarrow=false; $("#wAuto").setAttribute("aria-pressed","true"); $("#wNarrow").setAttribute("aria-pressed","false"); render(); });
+$("#prevBtn").addEventListener("click", ()=>{ current=(current-1+SCREENS.length)%SCREENS.length; render(); });
+$("#nextBtn").addEventListener("click", ()=>{ current=(current+1)%SCREENS.length; render(); });
+document.addEventListener("keydown", e=>{
+  if(e.target.tagName==="INPUT") return;
+  if(e.key==="ArrowRight") $("#nextBtn").click();
+  if(e.key==="ArrowLeft") $("#prevBtn").click();
+});
+
+render();
+</script>
+</body>
+</html>
