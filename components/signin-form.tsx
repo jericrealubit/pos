@@ -16,6 +16,8 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
+import { Spinner } from "@/components/ui/spinner"
+import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
 export function SigninForm() {
   const [formError, setFormError] = useState<string | null>(null)
@@ -81,17 +83,19 @@ export function SigninForm() {
           </p>
         )}
 
-        <Button type="submit" size="lg" disabled={isPending} className="w-full">
+        <Button type="submit" size="lg" disabled={isPending} className="w-full gap-1.5">
+          {isPending && <Spinner className="size-3.5" />}
           {isPending ? "Signing in…" : "Sign in"}
         </Button>
         <Button
           variant="ghost"
           size="lg"
-          className="w-full"
+          className="w-full gap-1.5"
           nativeButton={false}
           render={<Link href="/register" />}
         >
           Create an account
+          <LinkPendingIndicator />
         </Button>
 
         <p className="text-xs text-muted-foreground">

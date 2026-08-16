@@ -2,6 +2,7 @@ import Link from "next/link"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
 export default async function CheckEmailPage(
   props: PageProps<"/register/check-email">
@@ -23,11 +24,12 @@ export default async function CheckEmailPage(
         <CardContent>
           <Button
             variant="ghost"
-            className="w-full"
+            className="w-full gap-1.5"
             nativeButton={false}
             render={<Link href="/signin" />}
           >
             Back to sign in
+            <LinkPendingIndicator />
           </Button>
         </CardContent>
       </Card>

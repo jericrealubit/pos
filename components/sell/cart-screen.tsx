@@ -9,6 +9,7 @@ import { CartLines } from "@/components/sell/cart-lines"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "@/components/ui/toast"
+import { Spinner } from "@/components/ui/spinner"
 import { formatMoney } from "@/lib/money"
 import { createSale } from "@/app/actions/sales"
 
@@ -97,10 +98,11 @@ export function CartScreen() {
         <Button
           type="button"
           size="till"
-          className="w-full"
+          className="w-full gap-1.5"
           disabled={isPending}
           onClick={handleComplete}
         >
+          {isPending && <Spinner className="size-3.5" />}
           {isPending ? "Completing…" : "Complete sale"}
         </Button>
       </div>

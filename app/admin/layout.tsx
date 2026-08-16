@@ -5,6 +5,7 @@ import { AdminNavLink } from "@/app/admin/admin-nav-link"
 import { AdminMobileNav } from "@/app/admin/admin-mobile-nav"
 import { SignOutButton } from "@/components/sign-out-button"
 import { ThemeSwitcher } from "@/components/theme-switcher"
+import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const profile = await requireAdmin()
@@ -21,9 +22,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <div className="p-4">
           <Link
             href="/sell"
-            className="mb-2 block text-sm text-muted-foreground hover:text-foreground"
+            className="mb-2 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
           >
             Back to till
+            <LinkPendingIndicator className="size-3.5" />
           </Link>
           <div className="flex items-center gap-2">
             <SignOutButton />

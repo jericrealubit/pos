@@ -23,6 +23,7 @@ import { ProductArchiveDialog } from "@/components/product-archive-dialog"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { CameraScanner } from "@/components/sell/camera-scanner"
 import { toast } from "@/components/ui/toast"
+import { Spinner } from "@/components/ui/spinner"
 
 type Category = { id: string; name: string }
 type Product = {
@@ -221,7 +222,8 @@ export function ProductForm({
       )}
 
       <div className="mt-6 flex gap-2">
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" disabled={isPending} className="gap-1.5">
+          {isPending && <Spinner className="size-3.5" />}
           {isPending ? "Saving…" : mode === "create" ? "Save product" : "Save changes"}
         </Button>
         <Button

@@ -14,6 +14,7 @@ import {
 import { AdminNavLink } from "@/app/admin/admin-nav-link"
 import { SignOutButton } from "@/components/sign-out-button"
 import { ThemeSwitcher } from "@/components/theme-switcher"
+import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
 export function AdminMobileNav({ storeName }: { storeName: string }) {
   const [open, setOpen] = useState(false)
@@ -41,10 +42,11 @@ export function AdminMobileNav({ storeName }: { storeName: string }) {
           <div className="mt-auto p-4">
             <Link
               href="/sell"
-              className="mb-2 block text-sm text-muted-foreground hover:text-foreground"
+              className="mb-2 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
               onClick={() => setOpen(false)}
             >
               Back to till
+              <LinkPendingIndicator className="size-3.5" />
             </Link>
             <div className="flex items-center gap-2">
               <SignOutButton />

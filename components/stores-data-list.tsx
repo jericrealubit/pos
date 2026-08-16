@@ -7,6 +7,7 @@ import { DataList } from "@/components/data-list"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "@/components/ui/toast"
+import { Spinner } from "@/components/ui/spinner"
 import { storeSetPaused } from "@/app/actions/super-admin"
 import type { SuperAdminStoreRow } from "@/lib/dal/super-admin"
 
@@ -35,6 +36,7 @@ function PauseToggle({ store }: { store: SuperAdminStoreRow }) {
         disabled={isPending}
         aria-label={store.is_paused ? "Resume access" : "Pause access"}
       />
+      {isPending && <Spinner className="size-3.5" />}
       <Badge variant={store.is_paused ? "destructive" : "outline"}>
         {store.is_paused ? "Paused" : "Active"}
       </Badge>

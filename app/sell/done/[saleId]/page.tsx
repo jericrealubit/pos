@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/money"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { TillNav } from "@/components/sell/till-nav"
+import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
 export default async function SaleDonePage({
   params,
@@ -60,8 +61,9 @@ export default async function SaleDonePage({
         Text receipt
       </Button>
 
-      <Link href="/sell" className={cn(buttonVariants({ size: "till" }), "mt-2")}>
+      <Link href="/sell" className={cn(buttonVariants({ size: "till" }), "mt-2 gap-1.5")}>
         Start next sale
+        <LinkPendingIndicator />
       </Link>
 
       <TillNav role={profile?.role} active="sell" />

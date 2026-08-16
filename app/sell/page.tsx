@@ -6,6 +6,7 @@ import { formatMoney } from "@/lib/money"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { TillNav } from "@/components/sell/till-nav"
+import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
 export default async function SellPage() {
   const [profile, recentSales] = await Promise.all([getProfile(), getRecentSales()])
@@ -23,14 +24,19 @@ export default async function SellPage() {
         <p className="text-sm text-muted-foreground">Scan the first item to open a sale.</p>
       </div>
 
-      <Link href="/sell/scan" className={cn(buttonVariants({ size: "till" }), "w-full")}>
+      <Link
+        href="/sell/scan"
+        className={cn(buttonVariants({ size: "till" }), "w-full gap-1.5")}
+      >
         Start barcode reader
+        <LinkPendingIndicator />
       </Link>
       <Link
         href="/sell/scan"
-        className={cn(buttonVariants({ size: "till", variant: "ghost" }), "w-full")}
+        className={cn(buttonVariants({ size: "till", variant: "ghost" }), "w-full gap-1.5")}
       >
         Enter barcode by hand
+        <LinkPendingIndicator />
       </Link>
 
       <p className="border-l-2 pl-3 text-xs text-muted-foreground">
@@ -67,6 +73,7 @@ export default async function SellPage() {
                   <div className="font-medium tabular-nums">
                     {formatMoney(sale.subtotal_cents, currency)}
                   </div>
+                  <LinkPendingIndicator className="size-3.5 shrink-0" />
                 </Link>
               )
             })}

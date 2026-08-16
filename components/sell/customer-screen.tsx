@@ -11,6 +11,7 @@ import { formatMoney } from "@/lib/money"
 import { searchCustomers, customerCreate, type CustomerBalance } from "@/app/actions/customers"
 import { createSale } from "@/app/actions/sales"
 import { toast } from "@/components/ui/toast"
+import { Spinner } from "@/components/ui/spinner"
 
 const SEARCH_DEBOUNCE_MS = 250
 
@@ -125,7 +126,9 @@ export function CustomerScreen() {
             Matches
           </div>
           {isSearching ? (
-            <p className="text-sm text-muted-foreground">Searching…</p>
+            <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Spinner className="size-3.5" /> Searching…
+            </p>
           ) : matches.length > 0 ? (
             <div className="divide-y rounded-lg border">
               {matches.map((c) => (
@@ -143,7 +146,9 @@ export function CustomerScreen() {
                       owes {formatMoney(c.balance_cents, currency)}
                     </div>
                   </div>
-                  <span className="text-xs text-muted-foreground">Select</span>
+                  <span className="text-xs text-muted-foreground">
+                    {isPending ? <Spinner className="size-3.5" /> : "Select"}
+                  </span>
                 </button>
               ))}
             </div>
@@ -155,10 +160,11 @@ export function CustomerScreen() {
             type="button"
             variant="ghost"
             size="till"
-            className="mt-3 w-full"
+            className="mt-3 w-full gap-1.5"
             disabled={isPending}
             onClick={createAndComplete}
           >
+            {isPending && <Spinner className="size-3.5" />}
             + New customer — &ldquo;{query.trim()}&rdquo;
           </Button>
         </div>

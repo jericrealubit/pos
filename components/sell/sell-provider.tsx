@@ -8,6 +8,7 @@ import {
   useMemo,
   useReducer,
   useState,
+  useTransition,
 } from "react"
 import { usePathname } from "next/navigation"
 
@@ -21,6 +22,7 @@ import {
 } from "@/lib/pos/cart-reducer"
 import { playSuccessBeep } from "@/lib/pos/beep"
 import { toast } from "@/components/ui/toast"
+import { Spinner } from "@/components/ui/spinner"
 import { HardwareScannerInput } from "@/components/sell/hardware-scanner-input"
 import { UnknownBarcodeDialog } from "@/components/sell/unknown-barcode-dialog"
 
@@ -36,7 +38,8 @@ type SellContextValue = {
   setQuantity: (productId: string, quantity: number) => void
   removeLine: (productId: string) => void
   clear: () => void
-  onBarcode: (code: string) => Promise<void>
+  onBarcode: (code: string) => void
+  scanPending: boolean
   justAddedProductId: string | null
   role: Role
   currency: string
@@ -64,6 +67,7 @@ export function SellProvider({
   const [hydrated, setHydrated] = useState(false)
   const [justAddedProductId, setJustAddedProductId] = useState<string | null>(null)
   const [unknownBarcode, setUnknownBarcode] = useState<string | null>(null)
+  const [scanPending, startScanTransition] = useTransition()
   const pathname = usePathname()
 
   // Hydrate from sessionStorage after mount, not in a lazy initializer —
@@ -87,33 +91,35 @@ export function SellProvider({
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }, [state, hydrated])
 
-  const onBarcode = useCallback(async (code: string) => {
-    const result = await lookupByBarcode(code)
-    if (!result.ok) {
-      toast.add({ title: result.formError ?? "Could not look up that barcode.", type: "error" })
-      return
-    }
-    if (!result.data) {
-      setUnknownBarcode(code)
-      return
-    }
+  const onBarcode = useCallback((code: string) => {
+    startScanTransition(async () => {
+      const result = await lookupByBarcode(code)
+      if (!result.ok) {
+        toast.add({ title: result.formError ?? "Could not look up that barcode.", type: "error" })
+        return
+      }
+      if (!result.data) {
+        setUnknownBarcode(code)
+        return
+      }
 
-    const product = result.data
-    dispatch({
-      type: "ADD_OR_INCREMENT",
-      product: {
-        productId: product.id,
-        barcode: product.barcode,
-        name: product.name,
-        size: product.size,
-        priceCents: product.price_cents,
-      },
+      const product = result.data
+      dispatch({
+        type: "ADD_OR_INCREMENT",
+        product: {
+          productId: product.id,
+          barcode: product.barcode,
+          name: product.name,
+          size: product.size,
+          priceCents: product.price_cents,
+        },
+      })
+      playSuccessBeep()
+      setJustAddedProductId(product.id)
+      window.setTimeout(() => {
+        setJustAddedProductId((current) => (current === product.id ? null : current))
+      }, 1200)
     })
-    playSuccessBeep()
-    setJustAddedProductId(product.id)
-    window.setTimeout(() => {
-      setJustAddedProductId((current) => (current === product.id ? null : current))
-    }, 1200)
   }, [])
 
   const value = useMemo<SellContextValue>(
@@ -126,12 +132,13 @@ export function SellProvider({
       removeLine: (productId) => dispatch({ type: "REMOVE_LINE", productId }),
       clear: () => dispatch({ type: "CLEAR" }),
       onBarcode,
+      scanPending,
       justAddedProductId,
       role,
       currency,
       canManageProducts: role === "OWNER" || role === "ADMIN",
     }),
-    [state.lines, onBarcode, justAddedProductId, role, currency]
+    [state.lines, onBarcode, scanPending, justAddedProductId, role, currency]
   )
 
   const scannerEnabled = SCANNER_ROUTES.includes(pathname)
@@ -139,6 +146,11 @@ export function SellProvider({
   return (
     <SellContext.Provider value={value}>
       {children}
+      {scanPending && (
+        <div className="fixed top-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border bg-popover px-3 py-1 text-xs text-muted-foreground shadow-sm">
+          <Spinner className="size-3.5" /> Looking up…
+        </div>
+      )}
       <HardwareScannerInput enabled={scannerEnabled} onScan={onBarcode} />
       <UnknownBarcodeDialog
         barcode={unknownBarcode}

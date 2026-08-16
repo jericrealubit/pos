@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { ChevronLeftIcon } from "lucide-react"
 
+import { LinkPendingIndicator } from "@/components/link-pending-indicator"
+
 export function TillAppBar({
   title,
   backHref,
@@ -16,9 +18,10 @@ export function TillAppBar({
         <Link
           href={backHref}
           aria-label="Back"
-          className="flex size-8 shrink-0 items-center justify-center rounded border text-muted-foreground"
+          className="relative flex size-8 shrink-0 items-center justify-center rounded border text-muted-foreground"
         >
           <ChevronLeftIcon className="size-4" />
+          <LinkPendingIndicator className="absolute -right-1 -bottom-1 size-3 rounded-full bg-background" />
         </Link>
       )}
       <div className="text-base font-semibold">{title}</div>
