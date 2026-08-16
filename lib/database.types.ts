@@ -329,19 +329,37 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          is_paused: boolean
           name: string
         }
         Insert: {
           created_at?: string
           currency?: string
           id?: string
+          is_paused?: boolean
           name: string
         }
         Update: {
           created_at?: string
           currency?: string
           id?: string
+          is_paused?: boolean
           name?: string
+        }
+        Relationships: []
+      }
+      super_admins: {
+        Row: {
+          created_at: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
         }
         Relationships: []
       }
@@ -370,6 +388,7 @@ export type Database = {
     }
     Functions: {
       auth_is_admin: { Args: never; Returns: boolean }
+      auth_is_super_admin: { Args: never; Returns: boolean }
       auth_store_id: { Args: never; Returns: string }
       create_sale: {
         Args: {
@@ -385,6 +404,23 @@ export type Database = {
       create_store_and_profile: {
         Args: { first: string; last: string; store_name: string }
         Returns: string
+      }
+      super_admin_list_stores: {
+        Args: never
+        Returns: {
+          created_at: string
+          currency: string
+          is_paused: boolean
+          owner_email: string
+          owner_first_name: string
+          owner_last_name: string
+          store_id: string
+          store_name: string
+        }[]
+      }
+      super_admin_set_store_paused: {
+        Args: { p_paused: boolean; p_store_id: string }
+        Returns: undefined
       }
     }
     Enums: {

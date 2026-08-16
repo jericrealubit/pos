@@ -66,12 +66,18 @@ export async function signInAction(
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword(parsed.data)
+  const { data: signInData, error } = await supabase.auth.signInWithPassword(parsed.data)
   if (error) {
     return { ok: false, formError: "Incorrect email or password." }
   }
 
-  redirect("/sell")
+  const { data: superAdmin } = await supabase
+    .from("super_admins")
+    .select("id")
+    .eq("id", signInData.user.id)
+    .maybeSingle()
+
+  redirect(superAdmin ? "/super-admin" : "/sell")
 }
 
 export async function signOutAction(): Promise<void> {

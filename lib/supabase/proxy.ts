@@ -19,6 +19,7 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      db: { schema: "counter" },
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (cookiesToSet) => {
@@ -54,8 +55,14 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && isPublic) {
+    const { data: superAdmin } = await supabase
+      .from("super_admins")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle()
+
     const url = request.nextUrl.clone()
-    url.pathname = "/sell"
+    url.pathname = superAdmin ? "/super-admin" : "/sell"
     return NextResponse.redirect(url)
   }
 

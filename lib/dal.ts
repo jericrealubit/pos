@@ -28,15 +28,41 @@ export const getProfile = cache(async () => {
   return data
 })
 
+export const getIsSuperAdmin = cache(async () => {
+  const user = await getSession()
+  if (!user) return false
+
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from("super_admins")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle()
+  return !!data
+})
+
+async function checkNotPaused(profile: Awaited<ReturnType<typeof getProfile>>) {
+  if (profile?.stores?.is_paused) redirect("/store-paused")
+}
+
 export async function requireUser() {
   const user = await getSession()
   if (!user) redirect("/signin")
+  await checkNotPaused(await getProfile())
   return user
 }
 
 export async function requireAdmin() {
   const profile = await getProfile()
   if (!profile) redirect("/signin")
+  await checkNotPaused(profile)
   if (profile.role !== "OWNER" && profile.role !== "ADMIN") redirect("/signin")
   return profile
+}
+
+export async function requireSuperAdmin() {
+  const user = await getSession()
+  if (!user) redirect("/signin")
+  if (!(await getIsSuperAdmin())) redirect("/signin")
+  return user
 }
