@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button"
 
 type CameraState = "requesting" | "active" | "denied" | "unavailable"
 
-// Fires many times a second on the same code once it's in frame — ignore
-// repeats of the same value within this window.
-const DEBOUNCE_MS = 1500
+// A code fires many times a second while it's held in frame. Debouncing by
+// "time since last fire" still double-counts if the item is held longer
+// than the window (very easy — repositioning, autofocus settling). Instead
+// track continuous presence: only re-fire once the code has been genuinely
+// absent for this long, meaning the item actually left frame.
+const PRESENCE_GONE_MS = 700
 
 export function CameraScanner({
   onDetect,
@@ -22,7 +25,7 @@ export function CameraScanner({
   const videoRef = useRef<HTMLVideoElement>(null)
   const engineRef = useRef<BarcodeEngine | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
-  const lastCodeRef = useRef<{ code: string; at: number } | null>(null)
+  const activeCodeRef = useRef<{ code: string; lastSeenAt: number } | null>(null)
   const [state, setState] = useState<CameraState>("requesting")
   const [torchOn, setTorchOn] = useState(false)
   const [torchSupported, setTorchSupported] = useState(false)
@@ -66,9 +69,13 @@ export function CameraScanner({
         engineRef.current = engine
         engine.start(video, (code) => {
           const now = Date.now()
-          const last = lastCodeRef.current
-          if (last && last.code === code && now - last.at < DEBOUNCE_MS) return
-          lastCodeRef.current = { code, at: now }
+          const active = activeCodeRef.current
+          if (active && active.code === code && now - active.lastSeenAt < PRESENCE_GONE_MS) {
+            // Same item, still sitting in frame — refresh presence, don't re-fire.
+            activeCodeRef.current = { code, lastSeenAt: now }
+            return
+          }
+          activeCodeRef.current = { code, lastSeenAt: now }
           onDetect(code)
           if (stopAfterFirst) {
             engineRef.current?.stop()

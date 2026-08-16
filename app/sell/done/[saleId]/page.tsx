@@ -6,6 +6,7 @@ import { getSaleWithItems } from "@/lib/dal/sales"
 import { formatMoney } from "@/lib/money"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { TillNav } from "@/components/sell/till-nav"
 
 export default async function SaleDonePage({
   params,
@@ -62,6 +63,8 @@ export default async function SaleDonePage({
       <Link href="/sell" className={cn(buttonVariants({ size: "till" }), "mt-2")}>
         Start next sale
       </Link>
+
+      <TillNav role={profile?.role} active="sell" />
     </div>
   )
 }

@@ -5,25 +5,17 @@ import { getRecentSales } from "@/lib/dal/sales"
 import { formatMoney } from "@/lib/money"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { TillNav } from "@/components/sell/till-nav"
 
 export default async function SellPage() {
   const [profile, recentSales] = await Promise.all([getProfile(), getRecentSales()])
   const currency = profile?.stores.currency as string
   const storeName = profile?.stores.name as string
-  const canManageProducts = profile?.role === "OWNER" || profile?.role === "ADMIN"
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      <div className="flex items-center gap-3 border-b pb-3">
+      <div className="border-b pb-3">
         <div className="text-base font-semibold">{storeName}</div>
-        {canManageProducts && (
-          <Link
-            href="/admin/products"
-            className="ml-auto text-sm text-muted-foreground hover:text-foreground"
-          >
-            Admin
-          </Link>
-        )}
       </div>
 
       <div>
@@ -81,6 +73,8 @@ export default async function SellPage() {
           </div>
         </div>
       )}
+
+      <TillNav role={profile?.role} active="sell" />
     </div>
   )
 }
