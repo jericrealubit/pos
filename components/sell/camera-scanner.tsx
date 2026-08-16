@@ -12,7 +12,13 @@ type CameraState = "requesting" | "active" | "denied" | "unavailable"
 // repeats of the same value within this window.
 const DEBOUNCE_MS = 1500
 
-export function CameraScanner({ onDetect }: { onDetect: (code: string) => void }) {
+export function CameraScanner({
+  onDetect,
+  stopAfterFirst,
+}: {
+  onDetect: (code: string) => void
+  stopAfterFirst?: boolean
+}) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const engineRef = useRef<BarcodeEngine | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -64,6 +70,10 @@ export function CameraScanner({ onDetect }: { onDetect: (code: string) => void }
           if (last && last.code === code && now - last.at < DEBOUNCE_MS) return
           lastCodeRef.current = { code, at: now }
           onDetect(code)
+          if (stopAfterFirst) {
+            engineRef.current?.stop()
+            streamRef.current?.getTracks().forEach((t) => t.stop())
+          }
         })
         setState("active")
       } catch {
@@ -78,7 +88,7 @@ export function CameraScanner({ onDetect }: { onDetect: (code: string) => void }
       engineRef.current?.stop()
       streamRef.current?.getTracks().forEach((t) => t.stop())
     }
-  }, [onDetect])
+  }, [onDetect, stopAfterFirst])
 
   async function toggleTorch() {
     const track = streamRef.current?.getVideoTracks()[0]

@@ -35,6 +35,7 @@ export function AdminMobileNav({ storeName }: { storeName: string }) {
           </SheetHeader>
           <nav onClick={() => setOpen(false)}>
             <AdminNavLink href="/admin/products">Products</AdminNavLink>
+            <AdminNavLink href="/admin/customers">Customers</AdminNavLink>
           </nav>
           <div className="mt-auto p-4">
             <Link

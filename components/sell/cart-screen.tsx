@@ -73,16 +73,22 @@ export function CartScreen() {
         <div className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
           How is this being settled?
         </div>
-        <RadioGroup defaultValue="PAID" className="overflow-hidden rounded-lg border">
+        <RadioGroup
+          value="PAID"
+          onValueChange={(value) => {
+            if (value === "UNPAID") router.push("/sell/customer")
+          }}
+          className="overflow-hidden rounded-lg border"
+        >
           <label className="flex items-center gap-3 p-3 text-sm">
             <RadioGroupItem value="PAID" />
             <span className="flex-1">Paid</span>
             <span className="text-xs text-muted-foreground">Cash or card now</span>
           </label>
-          <label className="flex items-center gap-3 border-t p-3 text-sm opacity-50">
-            <RadioGroupItem value="UNPAID" disabled />
+          <label className="flex items-center gap-3 border-t p-3 text-sm">
+            <RadioGroupItem value="UNPAID" />
             <span className="flex-1">Pay later</span>
-            <span className="text-xs text-muted-foreground">Coming soon</span>
+            <span className="text-xs text-muted-foreground">Goes in the book</span>
           </label>
         </RadioGroup>
       </div>

@@ -15,6 +15,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <div className="p-4 font-medium">{storeName}</div>
         <nav className="flex-1">
           <AdminNavLink href="/admin/products">Products</AdminNavLink>
+          <AdminNavLink href="/admin/customers">Customers</AdminNavLink>
         </nav>
         <div className="p-4">
           <Link

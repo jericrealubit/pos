@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/field"
 import { CategorySelect } from "@/components/category-select"
 import { ProductArchiveDialog } from "@/components/product-archive-dialog"
+import { ResponsiveDialog } from "@/components/responsive-dialog"
+import { CameraScanner } from "@/components/sell/camera-scanner"
 import { toast } from "@/components/ui/toast"
 
 type Category = { id: string; name: string }
@@ -50,6 +52,7 @@ export function ProductForm({
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
   const [archiveOpen, setArchiveOpen] = useState(false)
+  const [scanOpen, setScanOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   const {
@@ -57,6 +60,7 @@ export function ProductForm({
     handleSubmit,
     control,
     setError,
+    setValue,
     formState: { errors },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -163,7 +167,7 @@ export function ProductForm({
                   placeholder="6009812340012"
                   {...register("barcode")}
                 />
-                <Button type="button" variant="outline" disabled title="Available once scanning ships">
+                <Button type="button" variant="outline" onClick={() => setScanOpen(true)}>
                   Scan
                 </Button>
               </div>
@@ -239,6 +243,18 @@ export function ProductForm({
           saleCount={saleCount}
         />
       )}
+
+      <ResponsiveDialog open={scanOpen} onOpenChange={setScanOpen} title="Scan barcode">
+        {scanOpen && (
+          <CameraScanner
+            stopAfterFirst
+            onDetect={(code) => {
+              setValue("barcode", code, { shouldValidate: true })
+              setScanOpen(false)
+            }}
+          />
+        )}
+      </ResponsiveDialog>
     </form>
   )
 }

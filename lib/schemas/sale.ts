@@ -7,5 +7,7 @@ export const saleLineSchema = z.object({
 
 export const createSaleSchema = z.object({
   items: z.array(saleLineSchema).min(1, "Cart is empty"),
+  customerId: z.string().uuid().optional(),
+  status: z.enum(["PAID", "UNPAID"]).default("PAID"),
 })
-export type CreateSaleInput = z.infer<typeof createSaleSchema>
+export type CreateSaleInput = z.input<typeof createSaleSchema>

@@ -43,6 +43,9 @@ export async function createSale(
   if (!parsed.success) {
     return { ok: false, formError: "Cart is empty." }
   }
+  if (parsed.data.status === "UNPAID" && !parsed.data.customerId) {
+    return { ok: false, formError: "Choose a customer for pay-later sales." }
+  }
 
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -51,6 +54,8 @@ export async function createSale(
         product_id: line.productId,
         quantity: line.quantity,
       })),
+      p_status: parsed.data.status,
+      ...(parsed.data.customerId ? { p_customer_id: parsed.data.customerId } : {}),
     })
     .single()
 
@@ -59,6 +64,9 @@ export async function createSale(
   }
 
   revalidatePath("/sell")
+  if (parsed.data.status === "UNPAID") {
+    revalidatePath("/admin/customers")
+  }
   return {
     ok: true,
     data: { saleId: data.sale_id, subtotalCents: data.subtotal_cents },
