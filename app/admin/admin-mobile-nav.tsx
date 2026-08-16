@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sheet"
 import { AdminNavLink } from "@/app/admin/admin-nav-link"
 import { SignOutButton } from "@/components/sign-out-button"
+import { ThemeSwitcher } from "@/components/theme-switcher"
 
 export function AdminMobileNav({ storeName }: { storeName: string }) {
   const [open, setOpen] = useState(false)
@@ -45,7 +46,10 @@ export function AdminMobileNav({ storeName }: { storeName: string }) {
             >
               Back to till
             </Link>
-            <SignOutButton />
+            <div className="flex items-center gap-2">
+              <SignOutButton />
+              <ThemeSwitcher />
+            </div>
           </div>
         </SheetContent>
       </Sheet>
