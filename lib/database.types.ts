@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "14.4"
   }
   counter: {
     Tables: {
@@ -371,6 +371,17 @@ export type Database = {
     Functions: {
       auth_is_admin: { Args: never; Returns: boolean }
       auth_store_id: { Args: never; Returns: string }
+      create_sale: {
+        Args: {
+          items: Json
+          p_customer_id?: string
+          p_status?: Database["counter"]["Enums"]["sale_status"]
+        }
+        Returns: {
+          sale_id: string
+          subtotal_cents: number
+        }[]
+      }
       create_store_and_profile: {
         Args: { first: string; last: string; store_name: string }
         Returns: string

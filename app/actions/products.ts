@@ -100,15 +100,3 @@ export async function productArchive(id: string): Promise<ActionResult> {
   return { ok: true, data: undefined }
 }
 
-export async function productDelete(id: string): Promise<ActionResult> {
-  await requireAdmin()
-  const supabase = await createClient()
-  const { error } = await supabase.from("products").delete().eq("id", id)
-
-  if (error) {
-    return { ok: false, formError: "Could not delete the product." }
-  }
-
-  revalidatePath("/admin/products")
-  return { ok: true, data: undefined }
-}

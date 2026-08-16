@@ -55,7 +55,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && isPublic) {
     const url = request.nextUrl.clone()
-    url.pathname = "/admin/products"
+    url.pathname = "/sell"
     return NextResponse.redirect(url)
   }
 

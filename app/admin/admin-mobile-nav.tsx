@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { MenuIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -36,6 +37,13 @@ export function AdminMobileNav({ storeName }: { storeName: string }) {
             <AdminNavLink href="/admin/products">Products</AdminNavLink>
           </nav>
           <div className="mt-auto p-4">
+            <Link
+              href="/sell"
+              className="mb-2 block text-sm text-muted-foreground hover:text-foreground"
+              onClick={() => setOpen(false)}
+            >
+              Back to till
+            </Link>
             <SignOutButton />
           </div>
         </SheetContent>

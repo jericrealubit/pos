@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      return NextResponse.redirect(new URL("/admin/products", request.url))
+      return NextResponse.redirect(new URL("/sell", request.url))
     }
   }
 

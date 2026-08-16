@@ -54,7 +54,7 @@ export async function registerAction(
     return { ok: false, formError: "Could not create your store. Try again." }
   }
 
-  redirect("/admin/products")
+  redirect("/sell")
 }
 
 export async function signInAction(
@@ -71,7 +71,7 @@ export async function signInAction(
     return { ok: false, formError: "Incorrect email or password." }
   }
 
-  redirect("/admin/products")
+  redirect("/sell")
 }
 
 export async function signOutAction(): Promise<void> {

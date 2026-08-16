@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 import { requireAdmin } from "@/lib/dal"
 import { AdminNavLink } from "@/app/admin/admin-nav-link"
 import { AdminMobileNav } from "@/app/admin/admin-mobile-nav"
@@ -15,6 +17,12 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           <AdminNavLink href="/admin/products">Products</AdminNavLink>
         </nav>
         <div className="p-4">
+          <Link
+            href="/sell"
+            className="mb-2 block text-sm text-muted-foreground hover:text-foreground"
+          >
+            Back to till
+          </Link>
           <SignOutButton />
         </div>
       </aside>

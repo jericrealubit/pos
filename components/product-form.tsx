@@ -19,7 +19,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { CategorySelect } from "@/components/category-select"
-import { ProductDeleteDialog } from "@/components/product-delete-dialog"
+import { ProductArchiveDialog } from "@/components/product-archive-dialog"
 import { toast } from "@/components/ui/toast"
 
 type Category = { id: string; name: string }
@@ -39,15 +39,17 @@ export function ProductForm({
   product,
   categories,
   saleCount = 0,
+  defaultBarcode,
 }: {
   mode: "create" | "edit"
   product?: Product
   categories: Category[]
   saleCount?: number
+  defaultBarcode?: string
 }) {
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
-  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [archiveOpen, setArchiveOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   const {
@@ -72,7 +74,7 @@ export function ProductForm({
           description: "",
           size: "",
           price: "",
-          barcode: "",
+          barcode: defaultBarcode ?? "",
           categoryId: "",
         },
   })
@@ -193,14 +195,14 @@ export function ProductForm({
 
           {mode === "edit" && product && (
             <Field>
-              <FieldLabel>Danger zone</FieldLabel>
+              <FieldLabel>Remove from till</FieldLabel>
               <FieldContent>
                 <Button
                   type="button"
-                  variant="destructive"
-                  onClick={() => setDeleteOpen(true)}
+                  variant="outline"
+                  onClick={() => setArchiveOpen(true)}
                 >
-                  Delete this product
+                  Archive this product
                 </Button>
               </FieldContent>
             </Field>
@@ -229,9 +231,9 @@ export function ProductForm({
       </div>
 
       {mode === "edit" && product && (
-        <ProductDeleteDialog
-          open={deleteOpen}
-          onOpenChange={setDeleteOpen}
+        <ProductArchiveDialog
+          open={archiveOpen}
+          onOpenChange={setArchiveOpen}
           productId={product.id}
           productName={product.name}
           saleCount={saleCount}

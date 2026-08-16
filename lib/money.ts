@@ -9,7 +9,10 @@ export function centsToDollars(cents: number): string {
 }
 
 export function formatMoney(cents: number, currency = "USD"): string {
-  return new Intl.NumberFormat(undefined, {
+  // Locale pinned explicitly (not `undefined`) so server and client render
+  // identically — the server process's locale and the browser's don't
+  // always agree, which otherwise produces a hydration mismatch.
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
   }).format(cents / 100)
