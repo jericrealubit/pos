@@ -25,7 +25,7 @@ const FEATURES = [
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-10 p-6">
+    <div className="flex flex-col items-center gap-10">
       <div className="max-w-lg text-center">
         <Image
           src="/logo-mark.png"
