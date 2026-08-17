@@ -54,17 +54,19 @@ export default async function SaleDonePage({
         </div>
       </div>
 
-      <Button type="button" variant="ghost" size="till" disabled title="Coming soon">
-        Print receipt
-      </Button>
-      <Button type="button" variant="ghost" size="till" disabled title="Coming soon">
-        Text receipt
-      </Button>
+      <div className="flex flex-col gap-4 md:max-w-sm">
+        <Button type="button" variant="ghost" size="till" disabled title="Coming soon">
+          Print receipt
+        </Button>
+        <Button type="button" variant="ghost" size="till" disabled title="Coming soon">
+          Text receipt
+        </Button>
 
-      <Link href="/sell" className={cn(buttonVariants({ size: "till" }), "mt-2 gap-1.5")}>
-        Start next sale
-        <LinkPendingIndicator />
-      </Link>
+        <Link href="/sell" className={cn(buttonVariants({ size: "till" }), "mt-2 gap-1.5")}>
+          Start next sale
+          <LinkPendingIndicator />
+        </Link>
+      </div>
 
       <TillNav role={profile?.role} active="sell" />
     </div>

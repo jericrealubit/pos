@@ -16,7 +16,7 @@ export function TillNav({
   const canManageProducts = role === "OWNER" || role === "ADMIN"
 
   return (
-    <div className="mt-2 flex gap-2 border-t pt-2 pb-[env(safe-area-inset-bottom)]">
+    <div className="mt-2 flex gap-2 border-t pt-2 pb-[env(safe-area-inset-bottom)] md:mx-auto md:max-w-sm">
       <Link
         href="/sell"
         className={cn(

@@ -55,7 +55,7 @@ export function SigninForm() {
             <Input
               id="email"
               type="email"
-              placeholder="grace@store.co"
+              placeholder="john@example.com"
               autoComplete="email"
               {...register("email")}
             />

@@ -10,7 +10,7 @@ export default async function CheckEmailPage(
   const { email } = await props.searchParams
 
   return (
-    <div className="flex min-h-full items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-xl">Check your email</CardTitle>

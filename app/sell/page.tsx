@@ -24,25 +24,27 @@ export default async function SellPage() {
         <p className="text-sm text-muted-foreground">Scan the first item to open a sale.</p>
       </div>
 
-      <Link
-        href="/sell/scan"
-        className={cn(buttonVariants({ size: "till" }), "w-full gap-1.5")}
-      >
-        Start barcode reader
-        <LinkPendingIndicator />
-      </Link>
-      <Link
-        href="/sell/scan"
-        className={cn(buttonVariants({ size: "till", variant: "ghost" }), "w-full gap-1.5")}
-      >
-        Enter barcode by hand
-        <LinkPendingIndicator />
-      </Link>
+      <div className="flex flex-col gap-4 md:max-w-sm">
+        <Link
+          href="/sell/scan"
+          className={cn(buttonVariants({ size: "till" }), "w-full gap-1.5")}
+        >
+          Start barcode reader
+          <LinkPendingIndicator />
+        </Link>
+        <Link
+          href="/sell/scan"
+          className={cn(buttonVariants({ size: "till", variant: "ghost" }), "w-full gap-1.5")}
+        >
+          Enter barcode by hand
+          <LinkPendingIndicator />
+        </Link>
 
-      <p className="border-l-2 pl-3 text-xs text-muted-foreground">
-        A plugged-in USB or Bluetooth scanner types into the app like a keyboard — it works on
-        this screen too, without pressing anything first.
-      </p>
+        <p className="border-l-2 pl-3 text-xs text-muted-foreground">
+          A plugged-in USB or Bluetooth scanner types into the app like a keyboard — it works on
+          this screen too, without pressing anything first.
+        </p>
+      </div>
 
       {recentSales.length > 0 && (
         <div>

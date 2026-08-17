@@ -61,7 +61,7 @@ export function RegisterForm() {
           <FieldContent>
             <Input
               id="storeName"
-              placeholder="Mensah General Store"
+              placeholder="Acme General Store"
               autoComplete="organization"
               {...register("storeName")}
             />
@@ -77,7 +77,7 @@ export function RegisterForm() {
           <FieldContent>
             <Input
               id="firstName"
-              placeholder="Grace"
+              placeholder="John"
               autoComplete="given-name"
               {...register("firstName")}
             />
@@ -90,7 +90,7 @@ export function RegisterForm() {
           <FieldContent>
             <Input
               id="lastName"
-              placeholder="Mensah"
+              placeholder="Doe"
               autoComplete="family-name"
               {...register("lastName")}
             />
@@ -104,7 +104,7 @@ export function RegisterForm() {
             <Input
               id="email"
               type="email"
-              placeholder="grace@store.co"
+              placeholder="john@example.com"
               autoComplete="email"
               {...register("email")}
             />

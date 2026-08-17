@@ -95,16 +95,18 @@ export function CartScreen() {
       </div>
 
       <div className="fixed inset-x-0 bottom-0 border-t bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        <Button
-          type="button"
-          size="till"
-          className="w-full gap-1.5"
-          disabled={isPending}
-          onClick={handleComplete}
-        >
-          {isPending && <Spinner className="size-3.5" />}
-          {isPending ? "Completing…" : "Complete sale"}
-        </Button>
+        <div className="mx-auto max-w-md md:max-w-3xl">
+          <Button
+            type="button"
+            size="till"
+            className="w-full gap-1.5"
+            disabled={isPending}
+            onClick={handleComplete}
+          >
+            {isPending && <Spinner className="size-3.5" />}
+            {isPending ? "Completing…" : "Complete sale"}
+          </Button>
+        </div>
       </div>
     </div>
   )

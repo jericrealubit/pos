@@ -133,7 +133,7 @@ export function DataList<TData extends RowData>({
         <div className="flex h-9 min-w-[170px] flex-1 items-center gap-2 rounded-lg border border-input px-2.5">
           <SearchIcon className="size-4 shrink-0 text-muted-foreground" />
           <input
-            className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/70"
             placeholder="Search"
             value={q}
             onChange={(e) => writeParams({ q: e.target.value, page: null })}

@@ -16,30 +16,44 @@ export function ScanScreen() {
     useSellCart()
 
   return (
-    <div className="flex flex-col gap-4 p-4 pb-24">
+    <div className="flex flex-col gap-4 p-4 pb-24 md:pb-4">
       <TillAppBar
         backHref="/sell"
         title="Scanning"
         right={`${itemCount} item${itemCount === 1 ? "" : "s"}`}
       />
 
-      <CameraScanner onDetect={onBarcode} />
-      <ManualBarcodeEntry onSubmit={onBarcode} />
-
-      <div>
-        <div className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          In this sale
+      <div className="md:grid md:grid-cols-[1fr_320px] md:items-start md:gap-6">
+        <div className="md:max-w-sm">
+          <CameraScanner onDetect={onBarcode} />
+          <ManualBarcodeEntry onSubmit={onBarcode} />
         </div>
-        <CartLines
-          lines={lines}
-          currency={currency}
-          editable
-          justAddedProductId={justAddedProductId}
-          onQuantityChange={setQuantity}
-        />
+
+        <div className="md:sticky md:top-4">
+          <div className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            In this sale
+          </div>
+          <CartLines
+            lines={lines}
+            currency={currency}
+            editable
+            justAddedProductId={justAddedProductId}
+            onQuantityChange={setQuantity}
+          />
+          <Button
+            type="button"
+            size="till"
+            className="mt-4 hidden w-full md:flex"
+            disabled={lines.length === 0}
+            onClick={() => router.push("/sell/cart")}
+          >
+            Done — {itemCount} item{itemCount === 1 ? "" : "s"} ·{" "}
+            {formatMoney(totalCents, currency)}
+          </Button>
+        </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 border-t bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <div className="fixed inset-x-0 bottom-0 border-t bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:hidden">
         <Button
           type="button"
           size="till"
