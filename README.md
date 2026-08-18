@@ -27,7 +27,7 @@ A mobile-first point of sale for a single retail store: scan a barcode, ring up 
 | Types | `supabase gen types typescript` | Generated into `lib/database.types.ts`, regenerated on every migration |
 | Tables | TanStack Table | Custom `DataTable`/`DataList` components — sorting, search, filtering, pagination |
 | Forms | react-hook-form + zod | Schemas in `lib/schemas`, reused for both client and server-side validation |
-| Hosting | Vercel | |
+| Hosting | Cloudflare Workers | Via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare) (`@opennextjs/cloudflare`) |
 
 ## Getting started
 
@@ -56,3 +56,14 @@ A mobile-first point of sale for a single retail store: scan a barcode, ring up 
    Open [http://localhost:3000](http://localhost:3000).
 
 > The camera scanner needs HTTPS, including in local dev — use `npm run dev:https` (or a tunnel like ngrok) if you're testing camera scanning from a phone on your local network.
+
+## Deploying to Cloudflare
+
+This app deploys to Cloudflare Workers via [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare). Config lives in `open-next.config.ts` and `wrangler.jsonc`.
+
+1. `npx wrangler login` — one-time Cloudflare account authorization.
+2. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as environment variables on the Worker (Cloudflare dashboard, or `wrangler`). These are needed at build time as well as runtime. `SUPABASE_SERVICE_ROLE_KEY` is only used by the local `scripts/create-super-admin.mjs` utility and is never needed on the deployed Worker.
+3. `npm run preview` — builds and boots the app locally under Cloudflare's actual Workers runtime (not just `next dev`), for a final check before deploying.
+4. `npm run deploy` — builds and pushes to your Cloudflare account.
+
+For local development with `next dev`, copy the two `NEXT_PUBLIC_*` values into `.dev.vars` (gitignored) so `npm run preview` has what it needs.
