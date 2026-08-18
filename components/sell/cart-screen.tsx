@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition } from "react"
+import { useRef, useTransition } from "react"
 import { useRouter } from "next/navigation"
 
 import { useSellCart } from "@/components/sell/sell-provider"
@@ -17,6 +17,10 @@ export function CartScreen() {
   const router = useRouter()
   const { lines, itemCount, totalCents, currency, clear } = useSellCart()
   const [isPending, startTransition] = useTransition()
+  // clear() empties the cart synchronously, re-rendering this screen while
+  // the router.push navigation is still in flight — this flag stops that
+  // re-render from hitting the "cart is empty" fallback below.
+  const leavingRef = useRef(false)
 
   function handleComplete() {
     startTransition(async () => {
@@ -27,9 +31,18 @@ export function CartScreen() {
         toast.add({ title: result.formError ?? "Could not complete the sale.", type: "error" })
         return
       }
+      leavingRef.current = true
       clear()
       router.push(`/sell/done/${result.data.saleId}`)
     })
+  }
+
+  if (leavingRef.current) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Spinner className="size-5" />
+      </div>
+    )
   }
 
   if (lines.length === 0) {

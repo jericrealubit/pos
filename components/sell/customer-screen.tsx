@@ -23,6 +23,10 @@ export function CustomerScreen() {
   const [isSearching, setIsSearching] = useState(false)
   const [isPending, startTransition] = useTransition()
   const debounceRef = useRef<number | null>(null)
+  // clear() empties the cart synchronously, re-rendering this screen while
+  // the router.push navigation is still in flight — this flag stops that
+  // re-render from hitting the empty-cart branches below.
+  const leavingRef = useRef(false)
 
   // Derived, not stored: an empty query has no matches regardless of
   // whatever the last debounced search happened to return.
@@ -60,6 +64,7 @@ export function CustomerScreen() {
         toast.add({ title: result.formError ?? "Could not complete the sale.", type: "error" })
         return
       }
+      leavingRef.current = true
       clear()
       router.push(`/sell/done/${result.data.saleId}`)
     })
@@ -83,9 +88,18 @@ export function CustomerScreen() {
         toast.add({ title: result.formError ?? "Could not complete the sale.", type: "error" })
         return
       }
+      leavingRef.current = true
       clear()
       router.push(`/sell/done/${result.data.saleId}`)
     })
+  }
+
+  if (leavingRef.current) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Spinner className="size-5" />
+      </div>
+    )
   }
 
   if (lines.length === 0) {
