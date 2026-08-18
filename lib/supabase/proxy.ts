@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
+import { getSupabaseEnv } from "@/lib/supabase/env"
+
 const PUBLIC_ROUTES = ["/", "/signin", "/register"]
 // Never redirected either way, regardless of auth state — a one-time link
 // click that must be allowed to run and establish its own session.
@@ -15,9 +17,11 @@ function matches(routes: string[], pathname: string) {
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })
 
+  const { url: supabaseUrl, anonKey } = getSupabaseEnv()
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    anonKey,
     {
       db: { schema: "counter" },
       cookies: {

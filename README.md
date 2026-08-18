@@ -62,7 +62,7 @@ A mobile-first point of sale for a single retail store: scan a barcode, ring up 
 This app deploys to Cloudflare Workers via [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare). Config lives in `open-next.config.ts` and `wrangler.jsonc`.
 
 1. `npx wrangler login` — one-time Cloudflare account authorization.
-2. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as environment variables on the Worker (Cloudflare dashboard, or `wrangler`). These are needed at build time as well as runtime. `SUPABASE_SERVICE_ROLE_KEY` is only used by the local `scripts/create-super-admin.mjs` utility and is never needed on the deployed Worker.
+2. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as **Build variables and secrets** on the Worker's build configuration (Cloudflare dashboard → Workers Builds), not just as runtime environment variables/secrets. Next.js inlines `NEXT_PUBLIC_*` values into the bundle during `next build` — if they're only set as runtime variables, the build step never sees them, they get compiled in as `undefined`, and the deployed Worker will 500 on every request that touches Supabase (that's every non-static route, since `middleware.ts` runs on all of them). Any change to these values requires a rebuild, not just a redeploy. `SUPABASE_SERVICE_ROLE_KEY` is only used by the local `scripts/create-super-admin.mjs` utility and is never needed on the deployed Worker.
 3. `npm run preview` — builds and boots the app locally under Cloudflare's actual Workers runtime (not just `next dev`), for a final check before deploying.
 4. `npm run deploy` — builds and pushes to your Cloudflare account.
 
