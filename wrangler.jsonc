@@ -7,5 +7,16 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
+  },
+  // Safe to commit: both are NEXT_PUBLIC_* values, meant to be exposed to
+  // every browser client and protected server-side by Supabase RLS, not
+  // secrets. Committing them here (instead of only setting them in the
+  // Cloudflare dashboard) stops `wrangler deploy` from wiping them on every
+  // push — the dashboard's "Variables and Secrets" UI is NOT the source of
+  // truth once a wrangler config file exists; this file is, and every
+  // deploy overwrites the dashboard with whatever's here.
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://cqzogkadiatpcvxgxqkc.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxem9na2FkaWF0cGN2eGd4cWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzYyMTIsImV4cCI6MjA4Nzk1MjIxMn0.u1IvDAQr7uyp6329OzfO0rV9M0zhRk3kqzKfMrV6koM"
   }
 }
