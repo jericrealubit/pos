@@ -1,10 +1,11 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { ArrowRightIcon, PrinterIcon } from "lucide-react"
 
 import { getProfile } from "@/lib/dal"
 import { getSaleWithItems } from "@/lib/dal/sales"
 import { formatMoney } from "@/lib/money"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { TillNav } from "@/components/sell/till-nav"
 import { LinkPendingIndicator } from "@/components/link-pending-indicator"
@@ -55,15 +56,18 @@ export default async function SaleDonePage({
       </div>
 
       <div className="flex flex-col gap-4 md:max-w-sm">
-        <Button type="button" variant="ghost" size="till" disabled title="Coming soon">
+        <Link
+          href={`/sell/done/${sale.id}/receipt`}
+          target="_blank"
+          className={cn(buttonVariants({ variant: "outline", size: "till" }), "gap-1.5")}
+        >
+          <PrinterIcon />
           Print receipt
-        </Button>
-        <Button type="button" variant="ghost" size="till" disabled title="Coming soon">
-          Text receipt
-        </Button>
+        </Link>
 
         <Link href="/sell" className={cn(buttonVariants({ size: "till" }), "mt-2 gap-1.5")}>
           Start next sale
+          <ArrowRightIcon />
           <LinkPendingIndicator />
         </Link>
       </div>

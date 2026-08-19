@@ -2,12 +2,14 @@
 
 import { useRef, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import { CircleCheckIcon, ScanLineIcon, ShoppingCartIcon } from "lucide-react"
 
 import { useSellCart } from "@/components/sell/sell-provider"
 import { TillAppBar } from "@/components/sell/till-app-bar"
 import { CartLines } from "@/components/sell/cart-lines"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { EmptyState } from "@/components/empty-state"
 import { toast } from "@/components/ui/toast"
 import { Spinner } from "@/components/ui/spinner"
 import { formatMoney } from "@/lib/money"
@@ -49,10 +51,21 @@ export function CartScreen() {
     return (
       <div className="flex flex-col gap-4 p-4">
         <TillAppBar backHref="/sell/scan" title="Sale summary" />
-        <p className="text-sm text-muted-foreground">Your cart is empty.</p>
-        <Button type="button" size="till" onClick={() => router.push("/sell/scan")}>
-          Scan an item
-        </Button>
+        <EmptyState
+          icon={ShoppingCartIcon}
+          title="Your cart is empty"
+          action={
+            <Button
+              type="button"
+              size="till"
+              className="gap-1.5"
+              onClick={() => router.push("/sell/scan")}
+            >
+              <ScanLineIcon />
+              Scan an item
+            </Button>
+          }
+        />
       </div>
     )
   }
@@ -76,11 +89,13 @@ export function CartScreen() {
 
       <Button
         type="button"
-        variant="ghost"
+        variant="outline"
         size="till"
+        className="gap-1.5"
         onClick={() => router.push("/sell/scan")}
       >
-        + Scan another item
+        <ScanLineIcon />
+        Scan another item
       </Button>
 
       <div>
@@ -113,10 +128,10 @@ export function CartScreen() {
             type="button"
             size="till"
             className="w-full gap-1.5"
-            disabled={isPending}
+            loading={isPending}
             onClick={handleComplete}
           >
-            {isPending && <Spinner className="size-3.5" />}
+            {!isPending && <CircleCheckIcon />}
             {isPending ? "Completing…" : "Complete sale"}
           </Button>
         </div>

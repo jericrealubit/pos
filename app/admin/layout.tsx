@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { PackageIcon, ReceiptIcon, SettingsIcon, UsersIcon } from "lucide-react"
 
 import { requireAdmin } from "@/lib/dal"
 import { AdminNavLink } from "@/app/admin/admin-nav-link"
@@ -6,6 +7,8 @@ import { AdminMobileNav } from "@/app/admin/admin-mobile-nav"
 import { SignOutButton } from "@/components/sign-out-button"
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { LinkPendingIndicator } from "@/components/link-pending-indicator"
+
+const NAV_ICON_CLASS = "size-4 shrink-0 group-aria-[current=page]:text-primary"
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const profile = await requireAdmin()
@@ -16,8 +19,18 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       <aside className="hidden md:flex md:w-[190px] md:shrink-0 md:flex-col md:border-r">
         <div className="p-4 font-medium">{storeName}</div>
         <nav className="flex-1">
-          <AdminNavLink href="/admin/products">Products</AdminNavLink>
-          <AdminNavLink href="/admin/customers">Customers</AdminNavLink>
+          <AdminNavLink href="/admin/products" icon={<PackageIcon className={NAV_ICON_CLASS} />}>
+            Products
+          </AdminNavLink>
+          <AdminNavLink href="/admin/customers" icon={<UsersIcon className={NAV_ICON_CLASS} />}>
+            Customers
+          </AdminNavLink>
+          <AdminNavLink href="/admin/sales" icon={<ReceiptIcon className={NAV_ICON_CLASS} />}>
+            Sale Records
+          </AdminNavLink>
+          <AdminNavLink href="/admin/settings" icon={<SettingsIcon className={NAV_ICON_CLASS} />}>
+            Settings
+          </AdminNavLink>
         </nav>
         <div className="p-4">
           <Link

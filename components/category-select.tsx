@@ -19,7 +19,6 @@ import {
 import { Field, FieldContent, FieldError, FieldLabel } from "@/components/ui/field"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { toast } from "@/components/ui/toast"
-import { Spinner } from "@/components/ui/spinner"
 
 type Category = { id: string; name: string }
 
@@ -86,8 +85,7 @@ export function CategorySelect({
         onOpenChange={setOpen}
         title="Add category"
         footer={
-          <Button type="submit" form="add-category-form" disabled={isPending} className="gap-1.5">
-            {isPending && <Spinner className="size-3.5" />}
+          <Button type="submit" form="add-category-form" loading={isPending} className="gap-1.5">
             {isPending ? "Adding…" : "Add category"}
           </Button>
         }

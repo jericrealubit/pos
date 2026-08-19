@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { SaveIcon } from "lucide-react"
 
 import { productCreate, productUpdate } from "@/app/actions/products"
 import { productFormSchema, type ProductFormValues } from "@/lib/schemas/product"
@@ -23,7 +24,6 @@ import { ProductArchiveDialog } from "@/components/product-archive-dialog"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { CameraScanner } from "@/components/sell/camera-scanner"
 import { toast } from "@/components/ui/toast"
-import { Spinner } from "@/components/ui/spinner"
 
 type Category = { id: string; name: string }
 type Product = {
@@ -222,13 +222,13 @@ export function ProductForm({
       )}
 
       <div className="mt-6 flex gap-2">
-        <Button type="submit" disabled={isPending} className="gap-1.5">
-          {isPending && <Spinner className="size-3.5" />}
+        <Button type="submit" size="till" loading={isPending} className="gap-1.5">
+          {!isPending && <SaveIcon />}
           {isPending ? "Saving…" : mode === "create" ? "Save product" : "Save changes"}
         </Button>
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           disabled={isPending}
           onClick={() => router.push("/admin/products")}
         >

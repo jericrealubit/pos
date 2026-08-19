@@ -326,25 +326,31 @@ export type Database = {
       }
       stores: {
         Row: {
+          address: string | null
           created_at: string
           currency: string
           id: string
           is_paused: boolean
           name: string
+          phone: string | null
         }
         Insert: {
+          address?: string | null
           created_at?: string
           currency?: string
           id?: string
           is_paused?: boolean
           name: string
+          phone?: string | null
         }
         Update: {
+          address?: string | null
           created_at?: string
           currency?: string
           id?: string
           is_paused?: boolean
           name?: string
+          phone?: string | null
         }
         Relationships: []
       }

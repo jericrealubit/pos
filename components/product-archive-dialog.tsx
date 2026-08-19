@@ -2,12 +2,12 @@
 
 import { useTransition } from "react"
 import { useRouter } from "next/navigation"
+import { ArchiveIcon } from "lucide-react"
 
 import { productArchive } from "@/app/actions/products"
 import { Button } from "@/components/ui/button"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { toast } from "@/components/ui/toast"
-import { Spinner } from "@/components/ui/spinner"
 
 export function ProductArchiveDialog({
   open,
@@ -48,17 +48,18 @@ export function ProductArchiveDialog({
         <div className="flex w-full flex-col gap-2">
           <Button
             type="button"
-            variant="default"
-            disabled={isPending}
+            variant="destructive"
+            size="till"
+            loading={isPending}
             className="gap-1.5"
             onClick={runArchive}
           >
-            {isPending && <Spinner className="size-3.5" />}
+            {!isPending && <ArchiveIcon />}
             Archive product
           </Button>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             disabled={isPending}
             onClick={() => onOpenChange(false)}
           >

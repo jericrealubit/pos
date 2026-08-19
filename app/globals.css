@@ -267,3 +267,9 @@ html {
     @apply font-sans;
   }
 }
+
+@media print {
+  @page {
+    margin: 0.5cm;
+  }
+}

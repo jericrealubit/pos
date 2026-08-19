@@ -1,10 +1,11 @@
 "use client"
 
-import { MinusIcon, PlusIcon } from "lucide-react"
+import { MinusIcon, PlusIcon, ScanBarcodeIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { formatMoney } from "@/lib/money"
 import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/empty-state"
 import type { CartLine } from "@/lib/pos/cart-reducer"
 
 export function CartLines({
@@ -21,11 +22,7 @@ export function CartLines({
   onQuantityChange?: (productId: string, quantity: number) => void
 }) {
   if (lines.length === 0) {
-    return (
-      <div className="rounded-lg border p-6 text-center text-sm text-muted-foreground">
-        Nothing scanned yet.
-      </div>
-    )
+    return <EmptyState icon={ScanBarcodeIcon} title="Nothing scanned yet" />
   }
 
   return (

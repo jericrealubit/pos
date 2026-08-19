@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { MenuIcon } from "lucide-react"
+import { MenuIcon, PackageIcon, ReceiptIcon, SettingsIcon, UsersIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,6 +15,8 @@ import { AdminNavLink } from "@/app/admin/admin-nav-link"
 import { SignOutButton } from "@/components/sign-out-button"
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { LinkPendingIndicator } from "@/components/link-pending-indicator"
+
+const NAV_ICON_CLASS = "size-4 shrink-0 group-aria-[current=page]:text-primary"
 
 export function AdminMobileNav({ storeName }: { storeName: string }) {
   const [open, setOpen] = useState(false)
@@ -36,8 +38,18 @@ export function AdminMobileNav({ storeName }: { storeName: string }) {
             <SheetTitle>{storeName}</SheetTitle>
           </SheetHeader>
           <nav onClick={() => setOpen(false)}>
-            <AdminNavLink href="/admin/products">Products</AdminNavLink>
-            <AdminNavLink href="/admin/customers">Customers</AdminNavLink>
+            <AdminNavLink href="/admin/products" icon={<PackageIcon className={NAV_ICON_CLASS} />}>
+              Products
+            </AdminNavLink>
+            <AdminNavLink href="/admin/customers" icon={<UsersIcon className={NAV_ICON_CLASS} />}>
+              Customers
+            </AdminNavLink>
+            <AdminNavLink href="/admin/sales" icon={<ReceiptIcon className={NAV_ICON_CLASS} />}>
+              Sale Records
+            </AdminNavLink>
+            <AdminNavLink href="/admin/settings" icon={<SettingsIcon className={NAV_ICON_CLASS} />}>
+              Settings
+            </AdminNavLink>
           </nav>
           <div className="mt-auto p-4">
             <Link

@@ -1,7 +1,7 @@
 import Link from "next/link"
 
 import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
 type Role = "OWNER" | "ADMIN" | "CASHIER"
@@ -9,24 +9,38 @@ type Role = "OWNER" | "ADMIN" | "CASHIER"
 export function TillNav({
   role,
   active,
+  disableSell = false,
 }: {
   role: Role | undefined
   active: "sell" | "admin"
+  disableSell?: boolean
 }) {
   const canManageProducts = role === "OWNER" || role === "ADMIN"
 
   return (
     <div className="mt-2 flex gap-2 border-t pt-2 pb-[env(safe-area-inset-bottom)] md:mx-auto md:max-w-sm">
-      <Link
-        href="/sell"
-        className={cn(
-          buttonVariants({ variant: active === "sell" ? "default" : "outline", size: "till" }),
-          "flex-1 gap-1.5"
-        )}
-      >
-        Sell
-        <LinkPendingIndicator />
-      </Link>
+      {disableSell ? (
+        <Button
+          type="button"
+          disabled
+          variant={active === "sell" ? "default" : "outline"}
+          size="till"
+          className="flex-1 gap-1.5"
+        >
+          Sell
+        </Button>
+      ) : (
+        <Link
+          href="/sell"
+          className={cn(
+            buttonVariants({ variant: active === "sell" ? "default" : "outline", size: "till" }),
+            "flex-1 gap-1.5"
+          )}
+        >
+          Sell
+          <LinkPendingIndicator />
+        </Link>
+      )}
       {canManageProducts && (
         <Link
           href="/admin/products"

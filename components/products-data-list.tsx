@@ -3,8 +3,11 @@
 import { useRouter } from "next/navigation"
 import type { LegacyColumnDef } from "@tanstack/react-table/legacy"
 
+import { PackageIcon } from "lucide-react"
+
 import { DataList } from "@/components/data-list"
 import { ProductCard } from "@/components/product-card"
+import { EmptyState } from "@/components/empty-state"
 import { formatMoney } from "@/lib/money"
 
 type ProductRow = {
@@ -84,9 +87,11 @@ export function ProductsDataList({
         />
       )}
       emptyState={
-        <div className="p-8 text-center text-sm text-muted-foreground">
-          No products yet. Add your first one.
-        </div>
+        <EmptyState
+          icon={PackageIcon}
+          title="No products yet"
+          description="Add your first one to start selling."
+        />
       }
     />
   )

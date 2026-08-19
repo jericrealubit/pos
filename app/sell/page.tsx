@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { ScanBarcodeIcon } from "lucide-react"
 
 import { getProfile } from "@/lib/dal"
 import { getRecentSales } from "@/lib/dal/sales"
@@ -29,12 +30,13 @@ export default async function SellPage() {
           href="/sell/scan"
           className={cn(buttonVariants({ size: "till" }), "w-full gap-1.5")}
         >
+          <ScanBarcodeIcon />
           Start barcode reader
           <LinkPendingIndicator />
         </Link>
         <Link
           href="/sell/scan"
-          className={cn(buttonVariants({ size: "till", variant: "ghost" }), "w-full gap-1.5")}
+          className={cn(buttonVariants({ size: "till", variant: "outline" }), "w-full gap-1.5")}
         >
           Enter barcode by hand
           <LinkPendingIndicator />
@@ -83,7 +85,7 @@ export default async function SellPage() {
         </div>
       )}
 
-      <TillNav role={profile?.role} active="sell" />
+      <TillNav role={profile?.role} active="sell" disableSell />
     </div>
   )
 }

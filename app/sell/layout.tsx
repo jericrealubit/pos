@@ -12,7 +12,7 @@ export default async function SellLayout({ children }: LayoutProps<"/sell">) {
 
   return (
     <SellProvider role={profile.role} currency={profile.stores.currency as string}>
-      <div className="fixed top-3 right-3 z-20">
+      <div className="fixed top-3 right-3 z-20 print:hidden">
         <ThemeSwitcher />
       </div>
       <div className="mx-auto min-h-full w-full max-w-md md:max-w-3xl">{children}</div>

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import { getCustomerWithUnpaidItems } from "@/lib/dal/customers"
 import { getProfile } from "@/lib/dal"
 import { formatMoney } from "@/lib/money"
-import { Button } from "@/components/ui/button"
+import { RecordPaymentButton } from "@/components/record-payment-button"
 
 export default async function CustomerAccountPage({
   params,
@@ -73,9 +73,11 @@ export default async function CustomerAccountPage({
         )}
       </div>
 
-      <Button type="button" variant="outline" disabled title="Coming soon">
-        Record a payment
-      </Button>
+      <RecordPaymentButton
+        customerId={id}
+        balanceCents={customer.balance_cents ?? 0}
+        currency={currency}
+      />
     </div>
   )
 }

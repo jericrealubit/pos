@@ -42,7 +42,7 @@ export function UnknownBarcodeDialog({
           )}
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="till"
             onClick={() => onOpenChange(false)}
           >

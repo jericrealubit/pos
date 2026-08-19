@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import { ScanLineIcon, ShoppingCartIcon, UserPlusIcon } from "lucide-react"
 
 import { useSellCart } from "@/components/sell/sell-provider"
 import { TillAppBar } from "@/components/sell/till-app-bar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/empty-state"
 import { formatMoney } from "@/lib/money"
 import { searchCustomers, customerCreate, type CustomerBalance } from "@/app/actions/customers"
 import { createSale } from "@/app/actions/sales"
@@ -106,10 +108,21 @@ export function CustomerScreen() {
     return (
       <div className="flex flex-col gap-4 p-4">
         <TillAppBar backHref="/sell/cart" title="Pay later" />
-        <p className="text-sm text-muted-foreground">Your cart is empty.</p>
-        <Button type="button" size="till" onClick={() => router.push("/sell/scan")}>
-          Scan an item
-        </Button>
+        <EmptyState
+          icon={ShoppingCartIcon}
+          title="Your cart is empty"
+          action={
+            <Button
+              type="button"
+              size="till"
+              className="gap-1.5"
+              onClick={() => router.push("/sell/scan")}
+            >
+              <ScanLineIcon />
+              Scan an item
+            </Button>
+          }
+        />
       </div>
     )
   }
@@ -144,14 +157,15 @@ export function CustomerScreen() {
               <Spinner className="size-3.5" /> Searching…
             </p>
           ) : matches.length > 0 ? (
-            <div className="divide-y rounded-lg border">
+            <div className="divide-y overflow-hidden rounded-lg border">
               {matches.map((c) => (
-                <button
+                <Button
                   key={c.id}
                   type="button"
+                  variant="ghost"
                   disabled={isPending}
                   onClick={() => completeSale(c.id)}
-                  className="flex w-full items-center gap-3 p-3 text-left text-sm disabled:opacity-50"
+                  className="h-auto w-full justify-between gap-3 rounded-none px-3 py-3 text-left whitespace-normal"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="font-medium">{c.name}</div>
@@ -163,7 +177,7 @@ export function CustomerScreen() {
                   <span className="text-xs text-muted-foreground">
                     {isPending ? <Spinner className="size-3.5" /> : "Select"}
                   </span>
-                </button>
+                </Button>
               ))}
             </div>
           ) : (
@@ -172,14 +186,14 @@ export function CustomerScreen() {
 
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="till"
             className="mt-3 w-full gap-1.5"
-            disabled={isPending}
+            loading={isPending}
             onClick={createAndComplete}
           >
-            {isPending && <Spinner className="size-3.5" />}
-            + New customer — &ldquo;{query.trim()}&rdquo;
+            {!isPending && <UserPlusIcon />}
+            New customer — &ldquo;{query.trim()}&rdquo;
           </Button>
         </div>
       )}

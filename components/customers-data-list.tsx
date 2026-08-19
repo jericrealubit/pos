@@ -3,8 +3,11 @@
 import { useRouter } from "next/navigation"
 import type { LegacyColumnDef } from "@tanstack/react-table/legacy"
 
+import { UsersIcon } from "lucide-react"
+
 import { DataList } from "@/components/data-list"
 import { CustomerCard } from "@/components/customer-card"
+import { EmptyState } from "@/components/empty-state"
 import { formatMoney } from "@/lib/money"
 import type { CustomerBalance } from "@/app/actions/customers"
 
@@ -69,9 +72,11 @@ export function CustomersDataList({
         />
       )}
       emptyState={
-        <div className="p-8 text-center text-sm text-muted-foreground">
-          No customers yet.
-        </div>
+        <EmptyState
+          icon={UsersIcon}
+          title="No customers yet"
+          description="Customers are added from the till during a Pay Later sale."
+        />
       }
     />
   )
