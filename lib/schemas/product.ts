@@ -5,6 +5,11 @@ const moneyDollars = z
   .trim()
   .regex(/^\d+(\.\d{1,2})?$/, "Enter a price like 4.20")
 
+const wholeNumber = z
+  .string()
+  .trim()
+  .regex(/^\d{1,6}$/, "Enter a whole number like 5")
+
 export const productFormSchema = z.object({
   name: z.string().trim().min(1, "Product name is required").max(200),
   description: z.string().trim().max(2000).optional().or(z.literal("")),
@@ -12,6 +17,7 @@ export const productFormSchema = z.object({
   price: moneyDollars,
   barcode: z.string().trim().min(1, "Barcode is required").max(64),
   categoryId: z.string().uuid().optional().or(z.literal("")),
+  stockQuantity: wholeNumber,
 })
 export type ProductFormValues = z.infer<typeof productFormSchema>
 

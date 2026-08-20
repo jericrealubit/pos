@@ -3,10 +3,10 @@ import { NextResponse, type NextRequest } from "next/server"
 
 import { getSupabaseEnv } from "@/lib/supabase/env"
 
-const PUBLIC_ROUTES = ["/", "/signin", "/register"]
+const PUBLIC_ROUTES = ["/", "/signin", "/register", "/forgot-password"]
 // Never redirected either way, regardless of auth state — a one-time link
 // click that must be allowed to run and establish its own session.
-const ALWAYS_ALLOW_ROUTES = ["/auth/confirm"]
+const ALWAYS_ALLOW_ROUTES = ["/auth/confirm", "/auth/reset"]
 
 function matches(routes: string[], pathname: string) {
   return routes.some((route) =>

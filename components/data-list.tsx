@@ -148,7 +148,13 @@ export function DataList<TData extends RowData>({
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder={filter.label} />
+              <SelectValue placeholder={filter.label}>
+                {(v: string | null) =>
+                  v === "all" || v === null
+                    ? filter.label
+                    : (filter.options.find((opt) => opt.value === v)?.label ?? filter.label)
+                }
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{filter.label}</SelectItem>

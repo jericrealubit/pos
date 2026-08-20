@@ -1,7 +1,19 @@
+import { Suspense } from "react"
 import Image from "next/image"
 
 import { SigninForm } from "@/components/signin-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+
+function SigninFormFallback() {
+  return (
+    <div className="flex flex-col gap-4">
+      <Skeleton className="h-16 w-full" />
+      <Skeleton className="h-16 w-full" />
+      <Skeleton className="h-9 w-full" />
+    </div>
+  )
+}
 
 export default function SigninPage() {
   return (
@@ -11,7 +23,9 @@ export default function SigninPage() {
         <CardTitle className="text-xl">Sign in</CardTitle>
       </CardHeader>
       <CardContent>
-        <SigninForm />
+        <Suspense fallback={<SigninFormFallback />}>
+          <SigninForm />
+        </Suspense>
       </CardContent>
     </Card>
   )

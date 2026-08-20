@@ -1,6 +1,7 @@
 "use client"
 
 import { useTransition } from "react"
+import { LogOutIcon } from "lucide-react"
 
 import { signOutAction } from "@/app/actions/auth"
 import { Button } from "@/components/ui/button"
@@ -16,6 +17,7 @@ export function SignOutButton() {
       className="gap-1.5"
       onClick={() => startTransition(() => signOutAction())}
     >
+      {!isPending && <LogOutIcon />}
       {isPending ? "Signing out…" : "Sign out"}
     </Button>
   )

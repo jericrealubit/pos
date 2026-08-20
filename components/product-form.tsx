@@ -34,6 +34,7 @@ type Product = {
   price_cents: number
   barcode: string
   category_id: string | null
+  stock_quantity: number
   sale_count?: number
 }
 
@@ -73,6 +74,7 @@ export function ProductForm({
           price: centsToDollars(product.price_cents),
           barcode: product.barcode,
           categoryId: product.category_id ?? "",
+          stockQuantity: String(product.stock_quantity),
         }
       : {
           name: "",
@@ -81,6 +83,7 @@ export function ProductForm({
           price: "",
           barcode: defaultBarcode ?? "",
           categoryId: "",
+          stockQuantity: "0",
         },
   })
 
@@ -195,6 +198,21 @@ export function ProductForm({
                 )}
               />
               <FieldError errors={[errors.categoryId]} />
+            </FieldContent>
+          </Field>
+
+          <Field data-invalid={!!errors.stockQuantity}>
+            <FieldLabel htmlFor="stockQuantity">Stock quantity</FieldLabel>
+            <FieldContent>
+              <Input
+                id="stockQuantity"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                {...register("stockQuantity")}
+              />
+              <FieldError errors={[errors.stockQuantity]} />
             </FieldContent>
           </Field>
 

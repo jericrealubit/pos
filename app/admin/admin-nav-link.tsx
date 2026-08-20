@@ -23,7 +23,7 @@ export function AdminNavLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "group flex items-center gap-2 border-l-2 border-transparent px-4 py-2 text-sm text-muted-foreground",
+        "group flex items-center gap-2 border-l-2 border-transparent px-3 py-2 text-sm text-muted-foreground",
         active && "border-l-[3px] border-primary bg-muted font-medium text-foreground"
       )}
     >

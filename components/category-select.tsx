@@ -66,7 +66,9 @@ export function CategorySelect({
     <div className="flex items-center gap-2">
       <Select value={value || undefined} onValueChange={(v) => onChange(String(v))}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select a category" />
+          <SelectValue placeholder="Select a category">
+            {(v: string | null) => items.find((c) => c.id === v)?.name ?? ""}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {items.map((c) => (

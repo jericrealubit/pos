@@ -16,7 +16,16 @@ type ProductRow = {
   size: string | null
   price_cents: number
   barcode: string
+  stock_quantity: number
   categories: { id: string; name: string } | null
+}
+
+const LOW_STOCK_THRESHOLD = 5
+
+function stockStatus(stockQuantity: number): "out" | "low" | "in-stock" {
+  if (stockQuantity === 0) return "out"
+  if (stockQuantity <= LOW_STOCK_THRESHOLD) return "low"
+  return "in-stock"
 }
 
 export function ProductsDataList({
@@ -56,6 +65,12 @@ export function ProductsDataList({
       cell: ({ row }) => formatMoney(row.original.price_cents, currency),
     },
     {
+      id: "stock",
+      accessorFn: (p) => p.stock_quantity,
+      header: "Stock",
+      cell: ({ row }) => row.original.stock_quantity,
+    },
+    {
       id: "barcode",
       accessorFn: (p) => p.barcode,
       header: "Barcode",
@@ -74,6 +89,16 @@ export function ProductsDataList({
           label: "Category",
           options: categories.map((c) => ({ label: c.name, value: c.id })),
           accessorFn: (p) => p.categories?.id ?? "",
+        },
+        {
+          key: "stockStatus",
+          label: "Stock",
+          options: [
+            { label: "In stock", value: "in-stock" },
+            { label: "Low stock", value: "low" },
+            { label: "Out of stock", value: "out" },
+          ],
+          accessorFn: (p) => stockStatus(p.stock_quantity),
         },
       ]}
       getRowId={(p) => p.id}

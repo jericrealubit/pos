@@ -16,6 +16,7 @@ function toRow(values: ProductFormValues) {
     price_cents: dollarsToCents(values.price),
     barcode: values.barcode,
     category_id: values.categoryId || null,
+    stock_quantity: Number(values.stockQuantity),
   }
 }
 

@@ -39,7 +39,13 @@ export function RecordPaymentButton({
         return
       }
 
-      toast.add({ title: "Payment recorded", type: "success" })
+      toast.add({
+        title:
+          result.data.settledCount > 0
+            ? `Payment recorded — ${result.data.settledCount} sale${result.data.settledCount === 1 ? "" : "s"} marked as settled`
+            : "Payment recorded",
+        type: "success",
+      })
       setOpen(false)
       router.refresh()
     })

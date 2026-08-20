@@ -7,8 +7,12 @@ import { createClient } from "@/lib/supabase/server"
 import {
   registerSchema,
   signinSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
   type RegisterInput,
   type SigninInput,
+  type ForgotPasswordInput,
+  type ResetPasswordInput,
 } from "@/lib/schemas/auth"
 import type { ActionResult } from "@/lib/actions/types"
 
@@ -84,4 +88,48 @@ export async function signOutAction(): Promise<void> {
   const supabase = await createClient()
   await supabase.auth.signOut()
   redirect("/signin")
+}
+
+export async function forgotPasswordAction(
+  input: ForgotPasswordInput
+): Promise<ActionResult> {
+  const parsed = forgotPasswordSchema.safeParse(input)
+  if (!parsed.success) {
+    return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors }
+  }
+
+  const origin = (await headers()).get("origin")
+  const supabase = await createClient()
+  // Always report success, whether or not the email is registered — the
+  // password-reset flow shouldn't reveal account existence.
+  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: origin ? `${origin}/auth/reset` : undefined,
+  })
+
+  return { ok: true, data: undefined }
+}
+
+export async function resetPasswordAction(
+  input: ResetPasswordInput
+): Promise<ActionResult> {
+  const parsed = resetPasswordSchema.safeParse(input)
+  if (!parsed.success) {
+    return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors }
+  }
+
+  const supabase = await createClient()
+  const { data: userData, error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  })
+  if (error) {
+    return { ok: false, formError: error.message }
+  }
+
+  const { data: superAdmin } = await supabase
+    .from("super_admins")
+    .select("id")
+    .eq("id", userData.user.id)
+    .maybeSingle()
+
+  redirect(superAdmin ? "/super-admin" : "/sell")
 }

@@ -14,3 +14,19 @@ export const signinSchema = z.object({
   password: z.string().min(1, "Password is required"),
 })
 export type SigninInput = z.infer<typeof signinSchema>
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().email("Enter a valid email"),
+})
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
+
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, "8 characters minimum"),
+    confirmPassword: z.string(),
+  })
+  .refine((v) => v.password === v.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  })
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>

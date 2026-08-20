@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { MenuIcon, PackageIcon, ReceiptIcon, SettingsIcon, UsersIcon } from "lucide-react"
+import { ChevronLeftIcon, MenuIcon, PackageIcon, ReceiptIcon, SettingsIcon, UsersIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -57,6 +57,7 @@ export function AdminMobileNav({ storeName }: { storeName: string }) {
               className="mb-2 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
               onClick={() => setOpen(false)}
             >
+              <ChevronLeftIcon className="size-3.5" />
               Back to till
               <LinkPendingIndicator className="size-3.5" />
             </Link>

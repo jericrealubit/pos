@@ -139,6 +139,7 @@ export type Database = {
           name: string
           price_cents: number
           size: string | null
+          stock_quantity: number
           store_id: string
           updated_at: string
         }
@@ -152,6 +153,7 @@ export type Database = {
           name: string
           price_cents: number
           size?: string | null
+          stock_quantity?: number
           store_id: string
           updated_at?: string
         }
@@ -165,6 +167,7 @@ export type Database = {
           name?: string
           price_cents?: number
           size?: string | null
+          stock_quantity?: number
           store_id?: string
           updated_at?: string
         }
@@ -410,6 +413,14 @@ export type Database = {
       create_store_and_profile: {
         Args: { first: string; last: string; store_name: string }
         Returns: string
+      }
+      record_payment: {
+        Args: { p_amount_cents: number; p_customer_id: string }
+        Returns: {
+          payment_id: string
+          balance_cents: number
+          settled_count: number
+        }[]
       }
       super_admin_list_stores: {
         Args: never

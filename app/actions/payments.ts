@@ -11,8 +11,8 @@ import type { ActionResult } from "@/lib/actions/types"
 
 export async function recordPayment(
   input: PaymentFormValues
-): Promise<ActionResult<{ id: string }>> {
-  const user = await requireUser()
+): Promise<ActionResult<{ id: string; settledCount: number }>> {
+  await requireUser()
   const parsed = paymentFormSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors }
@@ -44,14 +44,10 @@ export async function recordPayment(
 
   const supabase = await createClient()
   const { data, error } = await supabase
-    .from("payments")
-    .insert({
-      store_id: profile.store_id,
-      customer_id: parsed.data.customerId,
-      taken_by: user.id,
-      amount_cents: amountCents,
+    .rpc("record_payment", {
+      p_customer_id: parsed.data.customerId,
+      p_amount_cents: amountCents,
     })
-    .select("id")
     .single()
 
   if (error) {
@@ -60,5 +56,6 @@ export async function recordPayment(
 
   revalidatePath(`/admin/customers/${parsed.data.customerId}`)
   revalidatePath("/admin/customers")
-  return { ok: true, data }
+  revalidatePath("/admin/sales")
+  return { ok: true, data: { id: data.payment_id, settledCount: data.settled_count } }
 }
