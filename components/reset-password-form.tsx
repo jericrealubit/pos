@@ -1,11 +1,13 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
+import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { resetPasswordAction } from "@/app/actions/auth"
 import { resetPasswordSchema, type ResetPasswordInput } from "@/lib/schemas/auth"
+import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -16,8 +18,16 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function ResetPasswordForm() {
+  // The recovery session comes from the URL fragment the emailed link
+  // lands with (`#access_token=...`), which the browser client picks up
+  // and turns into a real session automatically — the server never sees
+  // that fragment, so there's nothing to check until this runs client-side.
+  const [sessionStatus, setSessionStatus] = useState<"checking" | "ready" | "invalid">(
+    "checking"
+  )
   const [formError, setFormError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const {
@@ -28,6 +38,32 @@ export function ResetPasswordForm() {
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema),
   })
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    // @supabase/ssr's browser client doesn't auto-detect a session from the
+    // URL fragment the way a plain supabase-js client would, so the
+    // access_token/refresh_token pair the emailed link lands with has to be
+    // read and applied by hand.
+    const hashParams = new URLSearchParams(window.location.hash.slice(1))
+    const accessToken = hashParams.get("access_token")
+    const refreshToken = hashParams.get("refresh_token")
+
+    if (accessToken && refreshToken) {
+      supabase.auth
+        .setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(({ data, error }) => {
+          window.history.replaceState(null, "", window.location.pathname)
+          setSessionStatus(!error && data.session ? "ready" : "invalid")
+        })
+      return
+    }
+
+    supabase.auth.getSession().then(({ data }) => {
+      setSessionStatus(data.session ? "ready" : "invalid")
+    })
+  }, [])
 
   function onSubmit(values: ResetPasswordInput) {
     setFormError(null)
@@ -42,6 +78,35 @@ export function ResetPasswordForm() {
         if (result.formError) setFormError(result.formError)
       }
     })
+  }
+
+  if (sessionStatus === "checking") {
+    return (
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+    )
+  }
+
+  if (sessionStatus === "invalid") {
+    return (
+      <div className="flex flex-col gap-4">
+        <p className="text-sm text-muted-foreground">
+          This reset link is invalid or has expired. Request a new one.
+        </p>
+        <Button
+          variant="outline"
+          size="lg"
+          className="w-full"
+          nativeButton={false}
+          render={<Link href="/forgot-password" />}
+        >
+          Request a new link
+        </Button>
+      </div>
+    )
   }
 
   return (

@@ -3,7 +3,7 @@
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createImplicitFlowClient } from "@/lib/supabase/server"
 import {
   registerSchema,
   signinSchema,
@@ -99,11 +99,13 @@ export async function forgotPasswordAction(
   }
 
   const origin = (await headers()).get("origin")
-  const supabase = await createClient()
+  // Implicit flow so the emailed link works on a different device/browser
+  // than the one that requested it — see createImplicitFlowClient.
+  const supabase = createImplicitFlowClient()
   // Always report success, whether or not the email is registered — the
   // password-reset flow shouldn't reveal account existence.
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: origin ? `${origin}/auth/reset` : undefined,
+    redirectTo: origin ? `${origin}/reset-password` : undefined,
   })
 
   return { ok: true, data: undefined }

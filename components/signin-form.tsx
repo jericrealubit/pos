@@ -25,8 +25,6 @@ const ERROR_MESSAGES: Record<string, string> = {
     "That confirmation link is invalid or has expired. Try registering again.",
   setup_failed:
     "We couldn't finish setting up your store. Please contact support.",
-  reset_failed:
-    "That password reset link is invalid or has expired. Request a new one.",
 }
 
 export function SigninForm() {
