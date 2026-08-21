@@ -4,14 +4,18 @@ import { NextResponse, type NextRequest } from "next/server"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 
 const PUBLIC_ROUTES = ["/", "/signin", "/register", "/forgot-password"]
-// Never redirected either way, regardless of auth state — a one-time link
-// click that must be allowed to run and establish its own session.
-// /reset-password is included because the recovery session is established
-// client-side (from the emailed link's URL fragment, which the server never
-// sees) — the request arrives here with no session yet, and once the page's
-// own JS establishes one, the form's follow-up submit must not get bounced
-// away either.
-const ALWAYS_ALLOW_ROUTES = ["/auth/confirm", "/reset-password"]
+// Never redirected either way, regardless of auth state. Two different
+// reasons land a route here:
+// - /auth/confirm is a one-time link click that must be allowed to run and
+//   establish its own session.
+// - /reset-password: the recovery session is established client-side (from
+//   the emailed link's URL fragment, which the server never sees) — the
+//   request arrives here with no session yet, and once the page's own JS
+//   establishes one, the form's follow-up submit must not get bounced away.
+// - /about is just informational and should stay reachable whether or not
+//   you're signed in, unlike /signin or /register which only make sense
+//   logged out.
+const ALWAYS_ALLOW_ROUTES = ["/auth/confirm", "/reset-password", "/about"]
 
 function matches(routes: string[], pathname: string) {
   return routes.some((route) =>

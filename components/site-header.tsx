@@ -12,7 +12,13 @@ export function SiteHeader() {
         <Image src="/logo-mark.png" alt="" width={28} height={28} />
         Counter
       </Link>
-      <nav className="flex items-center gap-2">
+      <nav className="flex items-center gap-4">
+        <Link
+          href="/about"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          About
+        </Link>
         <Link
           href="/signin"
           className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "gap-1.5")}

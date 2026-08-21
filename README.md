@@ -2,7 +2,7 @@
 
 A mobile-first point of sale for a single retail store: scan a barcode, ring up a sale, and if a regular customer needs to pay later, it goes straight into their tab instead of a separate notebook. Includes an admin dashboard for products, categories, and customer balances, plus a super-admin console for managing stores across the platform.
 
-**Live site:** [cpos.au](https://cpos.au/)
+**Live site:** [cpos.au](https://cpos.au/) — see the [About page](https://cpos.au/about) for a plain-language walkthrough of what it does, the tech stack, and how to reach the developer.
 
 <!-- screenshot: drop the live-site screenshot here -->
 
@@ -67,3 +67,7 @@ This app deploys to Cloudflare Workers via [`@opennextjs/cloudflare`](https://op
 4. `npm run deploy` — builds and pushes to your Cloudflare account.
 
 For local development with `next dev`, copy the two `NEXT_PUBLIC_*` values into `.dev.vars` (gitignored) so `npm run preview` has what it needs.
+
+## Author
+
+Built and maintained by [Jeric Realubit](https://www.linkedin.com/in/jericrealubit).
