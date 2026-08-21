@@ -9,7 +9,12 @@ export default async function SettingsPage() {
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold">Settings</h1>
       <StoreSettingsForm
-        store={{ name: store.name, address: store.address, phone: store.phone }}
+        store={{
+          name: store.name,
+          address: store.address,
+          phone: store.phone,
+          low_stock_threshold: store.low_stock_threshold,
+        }}
       />
     </div>
   )

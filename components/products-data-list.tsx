@@ -20,11 +20,9 @@ type ProductRow = {
   categories: { id: string; name: string } | null
 }
 
-const LOW_STOCK_THRESHOLD = 5
-
-function stockStatus(stockQuantity: number): "out" | "low" | "in-stock" {
+function stockStatus(stockQuantity: number, lowStockThreshold: number): "out" | "low" | "in-stock" {
   if (stockQuantity === 0) return "out"
-  if (stockQuantity <= LOW_STOCK_THRESHOLD) return "low"
+  if (stockQuantity <= lowStockThreshold) return "low"
   return "in-stock"
 }
 
@@ -32,10 +30,12 @@ export function ProductsDataList({
   products,
   categories,
   currency,
+  lowStockThreshold,
 }: {
   products: ProductRow[]
   categories: { id: string; name: string }[]
   currency: string
+  lowStockThreshold: number
 }) {
   const router = useRouter()
 
@@ -98,7 +98,7 @@ export function ProductsDataList({
             { label: "Low stock", value: "low" },
             { label: "Out of stock", value: "out" },
           ],
-          accessorFn: (p) => stockStatus(p.stock_quantity),
+          accessorFn: (p) => stockStatus(p.stock_quantity, lowStockThreshold),
         },
       ]}
       getRowId={(p) => p.id}

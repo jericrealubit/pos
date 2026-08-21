@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import {
   Field,
   FieldContent,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -22,6 +23,7 @@ type Store = {
   name: string
   address: string | null
   phone: string | null
+  low_stock_threshold: number
 }
 
 export function StoreSettingsForm({ store }: { store: Store }) {
@@ -39,6 +41,7 @@ export function StoreSettingsForm({ store }: { store: Store }) {
       name: store.name,
       address: store.address ?? "",
       phone: store.phone ?? "",
+      lowStockThreshold: String(store.low_stock_threshold),
     },
   })
 
@@ -85,6 +88,24 @@ export function StoreSettingsForm({ store }: { store: Store }) {
           <FieldContent>
             <Input id="phone" placeholder="+1 555 123 4567" {...register("phone")} />
             <FieldError errors={[errors.phone]} />
+          </FieldContent>
+        </Field>
+
+        <Field data-invalid={!!errors.lowStockThreshold}>
+          <FieldLabel htmlFor="lowStockThreshold">Low stock threshold</FieldLabel>
+          <FieldContent>
+            <Input
+              id="lowStockThreshold"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              step={1}
+              {...register("lowStockThreshold")}
+            />
+            <FieldDescription>
+              Products at or below this quantity are flagged as low stock in the products list.
+            </FieldDescription>
+            <FieldError errors={[errors.lowStockThreshold]} />
           </FieldContent>
         </Field>
       </FieldGroup>

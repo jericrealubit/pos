@@ -33,6 +33,7 @@ export default async function ProductsPage() {
         products={products}
         categories={categories}
         currency={profile!.stores.currency}
+        lowStockThreshold={profile!.stores.low_stock_threshold}
       />
     </div>
   )

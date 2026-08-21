@@ -21,6 +21,7 @@ export async function storeUpdate(input: StoreSettingsValues): Promise<ActionRes
       name: parsed.data.name,
       address: parsed.data.address || null,
       phone: parsed.data.phone || null,
+      low_stock_threshold: Number(parsed.data.lowStockThreshold),
     })
     .eq("id", profile.store_id)
 

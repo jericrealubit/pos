@@ -334,6 +334,7 @@ export type Database = {
           currency: string
           id: string
           is_paused: boolean
+          low_stock_threshold: number
           name: string
           phone: string | null
         }
@@ -343,6 +344,7 @@ export type Database = {
           currency?: string
           id?: string
           is_paused?: boolean
+          low_stock_threshold?: number
           name: string
           phone?: string | null
         }
@@ -352,6 +354,7 @@ export type Database = {
           currency?: string
           id?: string
           is_paused?: boolean
+          low_stock_threshold?: number
           name?: string
           phone?: string | null
         }
