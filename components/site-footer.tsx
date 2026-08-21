@@ -1,9 +1,15 @@
+import Link from "next/link"
 import { Flame } from "lucide-react"
 
 export function SiteFooter() {
   return (
     <footer className="flex flex-col items-center gap-3 border-t p-4 text-xs text-muted-foreground sm:flex-row sm:justify-between">
-      <span>&copy; {new Date().getFullYear()} Counter</span>
+      <span className="flex flex-col items-center gap-1 sm:flex-row sm:gap-3">
+        &copy; {new Date().getFullYear()} Counter, by WA AI Digital
+        <Link href="/terms" className="hover:text-foreground">
+          Terms &amp; Privacy
+        </Link>
+      </span>
 
       {/* Build credit — flame + smoke, aria-hidden. A 16px decorative badge, not
           motion in the reading path, so it animates unconditionally rather than

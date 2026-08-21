@@ -18,7 +18,14 @@ const PUBLIC_ROUTES = ["/", "/signin", "/register", "/forgot-password"]
 // - /opengraph-image is fetched by link-preview scrapers (Facebook, etc.),
 //   which never carry a session — redirecting it to /signin would mean
 //   every shared link renders a broken preview card instead of the image.
-const ALWAYS_ALLOW_ROUTES = ["/auth/confirm", "/reset-password", "/about", "/opengraph-image"]
+// - /terms is the Terms & Privacy page — informational, same as /about.
+const ALWAYS_ALLOW_ROUTES = [
+  "/auth/confirm",
+  "/reset-password",
+  "/about",
+  "/opengraph-image",
+  "/terms",
+]
 
 function matches(routes: string[], pathname: string) {
   return routes.some((route) =>
