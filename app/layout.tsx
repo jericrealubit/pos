@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://cpos.au"),
   title: "Counter — POS & Book",
   description: "Mobile-first POS and pay-later book for a single retail store.",
 };

@@ -15,7 +15,10 @@ const PUBLIC_ROUTES = ["/", "/signin", "/register", "/forgot-password"]
 // - /about is just informational and should stay reachable whether or not
 //   you're signed in, unlike /signin or /register which only make sense
 //   logged out.
-const ALWAYS_ALLOW_ROUTES = ["/auth/confirm", "/reset-password", "/about"]
+// - /opengraph-image is fetched by link-preview scrapers (Facebook, etc.),
+//   which never carry a session — redirecting it to /signin would mean
+//   every shared link renders a broken preview card instead of the image.
+const ALWAYS_ALLOW_ROUTES = ["/auth/confirm", "/reset-password", "/about", "/opengraph-image"]
 
 function matches(routes: string[], pathname: string) {
   return routes.some((route) =>
