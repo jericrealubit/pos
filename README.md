@@ -68,6 +68,10 @@ This app deploys to Cloudflare Workers via [`@opennextjs/cloudflare`](https://op
 
 For local development with `next dev`, copy the two `NEXT_PUBLIC_*` values into `.dev.vars` (gitignored) so `npm run preview` has what it needs.
 
+## Backups
+
+See [BACKUPS.md](./BACKUPS.md) — what's backed up, how to set up the automated daily backup to Cloudflare R2, and how to restore.
+
 ## Author
 
 Built and maintained by [Jeric Realubit](https://www.linkedin.com/in/jericrealubit).
