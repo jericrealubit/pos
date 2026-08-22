@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
-import { requireUser } from "@/lib/dal"
+import { requireUser, requireActiveStore } from "@/lib/dal"
 import { createSaleSchema, type CreateSaleInput } from "@/lib/schemas/sale"
 import type { ActionResult } from "@/lib/actions/types"
 
@@ -38,7 +38,7 @@ export async function lookupByBarcode(
 export async function createSale(
   input: CreateSaleInput
 ): Promise<ActionResult<{ saleId: string; subtotalCents: number }>> {
-  await requireUser()
+  await requireActiveStore()
   const parsed = createSaleSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, formError: "Cart is empty." }

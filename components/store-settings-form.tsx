@@ -24,6 +24,8 @@ type Store = {
   address: string | null
   phone: string | null
   low_stock_threshold: number
+  currency: string
+  hasSales: boolean
 }
 
 export function StoreSettingsForm({ store }: { store: Store }) {
@@ -42,6 +44,7 @@ export function StoreSettingsForm({ store }: { store: Store }) {
       address: store.address ?? "",
       phone: store.phone ?? "",
       lowStockThreshold: String(store.low_stock_threshold),
+      currency: store.currency,
     },
   })
 
@@ -106,6 +109,25 @@ export function StoreSettingsForm({ store }: { store: Store }) {
               Products at or below this quantity are flagged as low stock in the products list.
             </FieldDescription>
             <FieldError errors={[errors.lowStockThreshold]} />
+          </FieldContent>
+        </Field>
+
+        <Field data-invalid={!!errors.currency}>
+          <FieldLabel htmlFor="currency">Currency</FieldLabel>
+          <FieldContent>
+            <Input
+              id="currency"
+              placeholder="AUD"
+              autoCapitalize="characters"
+              disabled={store.hasSales}
+              {...register("currency")}
+            />
+            <FieldDescription>
+              {store.hasSales
+                ? "Locked because you've recorded sales. Prices are stored without a currency attached, so changing it now would reprice your whole history — contact support if this is wrong."
+                : "3-letter code, e.g. AUD, NZD, PHP, USD. This can only be changed before your first sale."}
+            </FieldDescription>
+            <FieldError errors={[errors.currency]} />
           </FieldContent>
         </Field>
       </FieldGroup>

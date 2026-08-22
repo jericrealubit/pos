@@ -12,6 +12,12 @@ import type { ActionResult } from "@/lib/actions/types"
 export async function recordPayment(
   input: PaymentFormValues
 ): Promise<ActionResult<{ id: string; settledCount: number }>> {
+  // Deliberately not gated on the subscription. Recording that a
+  // customer settled their tab takes no new value from the product —
+  // no new sale can be rung up while lapsed — and blocking it would
+  // leave the pay-later book showing debts that have actually been
+  // paid. A stale ledger is worse for the shop than a locked till, and
+  // it is the shop's own data either way.
   await requireUser()
   const parsed = paymentFormSchema.safeParse(input)
   if (!parsed.success) {
