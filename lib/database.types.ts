@@ -330,33 +330,45 @@ export type Database = {
       stores: {
         Row: {
           address: string | null
+          billing_note: string | null
+          country: string | null
           created_at: string
           currency: string
           id: string
           is_paused: boolean
           low_stock_threshold: number
           name: string
+          paid_until: string | null
           phone: string | null
+          plan: Database["counter"]["Enums"]["store_plan"]
         }
         Insert: {
           address?: string | null
+          billing_note?: string | null
+          country?: string | null
           created_at?: string
           currency?: string
           id?: string
           is_paused?: boolean
           low_stock_threshold?: number
           name: string
+          paid_until?: string | null
           phone?: string | null
+          plan?: Database["counter"]["Enums"]["store_plan"]
         }
         Update: {
           address?: string | null
+          billing_note?: string | null
+          country?: string | null
           created_at?: string
           currency?: string
           id?: string
           is_paused?: boolean
           low_stock_threshold?: number
           name?: string
+          paid_until?: string | null
           phone?: string | null
+          plan?: Database["counter"]["Enums"]["store_plan"]
         }
         Relationships: []
       }
@@ -414,7 +426,13 @@ export type Database = {
         }[]
       }
       create_store_and_profile: {
-        Args: { first: string; last: string; store_name: string }
+        Args: {
+          first: string
+          last: string
+          p_country?: string | null
+          p_currency?: string
+          store_name: string
+        }
         Returns: string
       }
       record_payment: {
@@ -425,18 +443,39 @@ export type Database = {
           settled_count: number
         }[]
       }
+      super_admin_extend_store: {
+        Args: {
+          p_extend_interval: string
+          p_note?: string | null
+          p_store_id: string
+        }
+        Returns: string
+      }
       super_admin_list_stores: {
         Args: never
         Returns: {
+          billing_note: string
+          country: string
           created_at: string
           currency: string
           is_paused: boolean
           owner_email: string
           owner_first_name: string
           owner_last_name: string
+          paid_until: string
+          plan: Database["counter"]["Enums"]["store_plan"]
           store_id: string
           store_name: string
         }[]
+      }
+      super_admin_set_store_billing: {
+        Args: {
+          p_note?: string | null
+          p_paid_until: string | null
+          p_plan: Database["counter"]["Enums"]["store_plan"]
+          p_store_id: string
+        }
+        Returns: undefined
       }
       super_admin_set_store_paused: {
         Args: { p_paused: boolean; p_store_id: string }
@@ -445,6 +484,7 @@ export type Database = {
     }
     Enums: {
       sale_status: "PAID" | "UNPAID" | "SETTLED"
+      store_plan: "TRIAL" | "PAID"
       user_role: "OWNER" | "ADMIN" | "CASHIER"
     }
     CompositeTypes: {
@@ -574,6 +614,7 @@ export const Constants = {
   counter: {
     Enums: {
       sale_status: ["PAID", "UNPAID", "SETTLED"],
+      store_plan: ["TRIAL", "PAID"],
       user_role: ["OWNER", "ADMIN", "CASHIER"],
     },
   },

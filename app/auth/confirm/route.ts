@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
         store_name?: string
         first_name?: string
         last_name?: string
+        country?: string
+        currency?: string
       }
 
       if (meta.store_name && meta.first_name && meta.last_name) {
@@ -23,6 +25,11 @@ export async function GET(request: NextRequest) {
             store_name: meta.store_name,
             first: meta.first_name,
             last: meta.last_name,
+            // Anyone who signed up before country capture shipped still
+            // has a pending confirmation link with no country on it;
+            // they fall through to the rest-of-world defaults.
+            p_currency: meta.currency ?? "USD",
+            p_country: meta.country ?? null,
           }
         )
         // Ignore "already belongs to a store" — the link may be opened

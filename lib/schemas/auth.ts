@@ -6,6 +6,13 @@ export const registerSchema = z.object({
   lastName: z.string().trim().min(1, "Last name is required").max(100),
   email: z.string().trim().email("Enter a valid email"),
   password: z.string().min(8, "8 characters minimum"),
+  // Sets the store's currency and which price it is quoted. Validated
+  // as a shape rather than against the option list so an unlisted
+  // country arriving from the CF-IPCountry header still registers.
+  country: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z]{2}$/, "Select the country your store is in"),
 })
 export type RegisterInput = z.infer<typeof registerSchema>
 

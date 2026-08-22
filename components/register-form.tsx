@@ -3,13 +3,21 @@
 import { useState, useTransition } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { registerAction } from "@/app/actions/auth"
 import { registerSchema, type RegisterInput } from "@/lib/schemas/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { COUNTRY_OPTIONS, countryName } from "@/lib/countries"
 import {
   Field,
   FieldContent,
@@ -21,7 +29,7 @@ import {
 import { Spinner } from "@/components/ui/spinner"
 import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
-export function RegisterForm() {
+export function RegisterForm({ defaultCountry }: { defaultCountry: string }) {
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -29,9 +37,11 @@ export function RegisterForm() {
     register,
     handleSubmit,
     setError,
+    control,
     formState: { errors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
+    defaultValues: { country: defaultCountry },
   })
 
   function onSubmit(values: RegisterInput) {
@@ -69,6 +79,36 @@ export function RegisterForm() {
               Prints on receipts and heads the admin panel.
             </FieldDescription>
             <FieldError errors={[errors.storeName]} />
+          </FieldContent>
+        </Field>
+
+        <Field data-invalid={!!errors.country}>
+          <FieldLabel htmlFor="country">Country</FieldLabel>
+          <FieldContent>
+            <Controller
+              control={control}
+              name="country"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={(v) => field.onChange(String(v))}>
+                  <SelectTrigger id="country" className="w-full">
+                    <SelectValue placeholder="Select a country">
+                      {(v: string | null) => (v ? countryName(v) : "")}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRY_OPTIONS.map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            <FieldDescription>
+              Sets your currency and pricing. Ask us if you need to change it later.
+            </FieldDescription>
+            <FieldError errors={[errors.country]} />
           </FieldContent>
         </Field>
 

@@ -19,12 +19,16 @@ const PUBLIC_ROUTES = ["/", "/signin", "/register", "/forgot-password"]
 //   which never carry a session — redirecting it to /signin would mean
 //   every shared link renders a broken preview card instead of the image.
 // - /terms is the Terms & Privacy page — informational, same as /about.
+// - /pricing has to work logged out (it's a marketing page) *and* logged
+//   in (an owner checking what renewal costs), so it can't go in
+//   PUBLIC_ROUTES — that would bounce signed-in visitors to /sell.
 const ALWAYS_ALLOW_ROUTES = [
   "/auth/confirm",
   "/reset-password",
   "/about",
   "/opengraph-image",
   "/terms",
+  "/pricing",
 ]
 
 function matches(routes: string[], pathname: string) {

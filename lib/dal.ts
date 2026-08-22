@@ -4,6 +4,7 @@ import { cache } from "react"
 import { redirect } from "next/navigation"
 
 import { createClient } from "@/lib/supabase/server"
+import { getBillingState } from "@/lib/billing"
 
 export const getSession = cache(async () => {
   const supabase = await createClient()
@@ -41,8 +42,22 @@ export const getIsSuperAdmin = cache(async () => {
   return !!data
 })
 
-async function checkNotPaused(profile: Awaited<ReturnType<typeof getProfile>>) {
+type Profile = Awaited<ReturnType<typeof getProfile>>
+
+async function checkNotPaused(profile: Profile) {
   if (profile?.stores?.is_paused) redirect("/store-paused")
+}
+
+/**
+ * A lapsed subscription blocks the till and every write, but leaves the
+ * admin read screens and the CSV export open. The pay-later book is the
+ * data a shop can least afford to lose access to, and holding it hostage
+ * buys nothing: refusing new sales is already the leverage. It also keeps
+ * reactivation frictionless — the data is intact and waiting when they pay.
+ */
+async function checkSubscription(profile: Profile) {
+  if (!profile) return
+  if (!getBillingState(profile.stores).isActive) redirect("/billing")
 }
 
 export async function requireUser() {
@@ -57,6 +72,28 @@ export async function requireAdmin() {
   if (!profile) redirect("/signin")
   await checkNotPaused(profile)
   if (profile.role !== "OWNER" && profile.role !== "ADMIN") redirect("/signin")
+  return profile
+}
+
+/**
+ * Gate for the till and for every write. Call this rather than
+ * requireUser in Server Actions that create or change data — hiding the
+ * UI is not enough, a Server Action is a public endpoint.
+ */
+export async function requireActiveStore() {
+  const user = await getSession()
+  if (!user) redirect("/signin")
+  const profile = await getProfile()
+  if (!profile) redirect("/signin")
+  await checkNotPaused(profile)
+  await checkSubscription(profile)
+  return profile
+}
+
+/** Admin-only writes: the catalogue, store settings. */
+export async function requireActiveAdmin() {
+  const profile = await requireAdmin()
+  await checkSubscription(profile)
   return profile
 }
 

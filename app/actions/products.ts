@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
-import { requireAdmin } from "@/lib/dal"
+import { requireActiveAdmin } from "@/lib/dal"
 import { productFormSchema, type ProductFormValues } from "@/lib/schemas/product"
 import { dollarsToCents } from "@/lib/money"
 import type { ActionResult } from "@/lib/actions/types"
@@ -23,7 +23,7 @@ function toRow(values: ProductFormValues) {
 export async function productCreate(
   input: ProductFormValues
 ): Promise<ActionResult<{ id: string }>> {
-  const profile = await requireAdmin()
+  const profile = await requireActiveAdmin()
   const parsed = productFormSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors }
@@ -56,7 +56,7 @@ export async function productUpdate(
   id: string,
   input: ProductFormValues
 ): Promise<ActionResult> {
-  await requireAdmin()
+  await requireActiveAdmin()
   const parsed = productFormSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors }
@@ -86,7 +86,7 @@ export async function productUpdate(
 }
 
 export async function productArchive(id: string): Promise<ActionResult> {
-  await requireAdmin()
+  await requireActiveAdmin()
   const supabase = await createClient()
   const { error } = await supabase
     .from("products")

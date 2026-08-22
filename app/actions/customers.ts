@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
-import { requireUser, getProfile } from "@/lib/dal"
+import { requireUser, requireActiveStore, getProfile } from "@/lib/dal"
 import { searchCustomerBalances } from "@/lib/dal/customers"
 import { customerFormSchema, type CustomerFormValues } from "@/lib/schemas/customer"
 import type { ActionResult } from "@/lib/actions/types"
@@ -28,7 +28,7 @@ export async function searchCustomers(query: string): Promise<ActionResult<Custo
 export async function customerCreate(
   input: CustomerFormValues
 ): Promise<ActionResult<{ id: string; name: string }>> {
-  await requireUser()
+  await requireActiveStore()
   const parsed = customerFormSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors }

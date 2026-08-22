@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ChevronLeftIcon, MenuIcon, PackageIcon, ReceiptIcon, SettingsIcon, UsersIcon } from "lucide-react"
+import { ChevronLeftIcon, CreditCardIcon, MenuIcon, PackageIcon, ReceiptIcon, SettingsIcon, UsersIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -46,6 +46,9 @@ export function AdminMobileNav({ storeName }: { storeName: string }) {
             </AdminNavLink>
             <AdminNavLink href="/admin/sales" icon={<ReceiptIcon className={NAV_ICON_CLASS} />}>
               Sale Records
+            </AdminNavLink>
+            <AdminNavLink href="/billing" icon={<CreditCardIcon className={NAV_ICON_CLASS} />}>
+              Billing
             </AdminNavLink>
             <AdminNavLink href="/admin/settings" icon={<SettingsIcon className={NAV_ICON_CLASS} />}>
               Settings

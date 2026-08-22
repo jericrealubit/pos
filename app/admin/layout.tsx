@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ChevronLeftIcon,
+  CreditCardIcon,
   PackageIcon,
   ReceiptIcon,
   SettingsIcon,
@@ -13,6 +14,7 @@ import { AdminMobileNav } from "@/app/admin/admin-mobile-nav";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { LinkPendingIndicator } from "@/components/link-pending-indicator";
+import { BillingBanner } from "@/components/billing-banner";
 
 const NAV_ICON_CLASS = "size-4 shrink-0 group-aria-[current=page]:text-primary";
 
@@ -21,7 +23,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const storeName = profile.stores.name as string;
 
   return (
-    <div className="flex min-h-full">
+    <div className="flex min-h-full flex-col">
+      <BillingBanner />
+      <div className="flex flex-1">
       <aside className="hidden md:flex md:w-[130px] md:shrink-0 md:flex-col md:border-r">
         <div className="p-4 font-medium">{storeName}</div>
         <nav className="flex-1">
@@ -49,6 +53,12 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           >
             Settings
           </AdminNavLink>
+          <AdminNavLink
+            href="/billing"
+            icon={<CreditCardIcon className={NAV_ICON_CLASS} />}
+          >
+            Billing
+          </AdminNavLink>
         </nav>
         <div className="p-4">
           <Link
@@ -65,9 +75,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           </div>
         </div>
       </aside>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <AdminMobileNav storeName={storeName} />
-        <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <AdminMobileNav storeName={storeName} />
+          <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
+        </div>
       </div>
     </div>
   );
