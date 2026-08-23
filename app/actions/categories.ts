@@ -3,14 +3,14 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
-import { requireActiveAdmin } from "@/lib/dal"
+import { requireAdmin } from "@/lib/dal"
 import { categoryFormSchema, type CategoryFormValues } from "@/lib/schemas/product"
 import type { ActionResult } from "@/lib/actions/types"
 
 export async function categoryCreate(
   input: CategoryFormValues
 ): Promise<ActionResult<{ id: string; name: string }>> {
-  const profile = await requireActiveAdmin()
+  const profile = await requireAdmin()
   const parsed = categoryFormSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors }

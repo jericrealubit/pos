@@ -50,7 +50,7 @@ export function SalesDataList({
 
   function setRange(next: SalesRange) {
     const params = new URLSearchParams(searchParams.toString())
-    if (next === "day") params.delete("range")
+    if (next === "all") params.delete("range")
     else params.set("range", next)
     params.delete("page")
     router.push(`${pathname}?${params.toString()}`)

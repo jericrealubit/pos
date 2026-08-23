@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
-import { requireUser, requireActiveStore, getProfile } from "@/lib/dal"
+import { requireUser, requireStore, hasPremium } from "@/lib/dal"
 import { searchCustomerBalances } from "@/lib/dal/customers"
 import { customerFormSchema, type CustomerFormValues } from "@/lib/schemas/customer"
 import type { ActionResult } from "@/lib/actions/types"
@@ -28,15 +28,18 @@ export async function searchCustomers(query: string): Promise<ActionResult<Custo
 export async function customerCreate(
   input: CustomerFormValues
 ): Promise<ActionResult<{ id: string; name: string }>> {
-  await requireActiveStore()
+  const profile = await requireStore()
+  // Customers exist only for the pay-later book, so adding one is premium.
+  if (!hasPremium(profile)) {
+    return {
+      ok: false,
+      code: "UPGRADE",
+      formError: "Adding customers to the pay-later book is a Premium feature.",
+    }
+  }
   const parsed = customerFormSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors }
-  }
-
-  const profile = await getProfile()
-  if (!profile) {
-    return { ok: false, formError: "Your store isn't set up yet." }
   }
 
   const supabase = await createClient()

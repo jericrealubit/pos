@@ -3,12 +3,12 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
-import { requireActiveAdmin } from "@/lib/dal"
+import { requireAdmin } from "@/lib/dal"
 import { storeSettingsSchema, type StoreSettingsValues } from "@/lib/schemas/store"
 import type { ActionResult } from "@/lib/actions/types"
 
 export async function storeUpdate(input: StoreSettingsValues): Promise<ActionResult> {
-  const profile = await requireActiveAdmin()
+  const profile = await requireAdmin()
   const parsed = storeSettingsSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors }

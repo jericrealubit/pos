@@ -44,6 +44,8 @@ type SellContextValue = {
   role: Role
   currency: string
   canManageProducts: boolean
+  /** Premium: the pay-later book is unlocked. False on the Free tier. */
+  canUsePayLater: boolean
 }
 
 const SellContext = createContext<SellContextValue | null>(null)
@@ -58,10 +60,12 @@ export function SellProvider({
   children,
   role,
   currency,
+  canUsePayLater,
 }: {
   children: React.ReactNode
   role: Role
   currency: string
+  canUsePayLater: boolean
 }) {
   const [state, dispatch] = useReducer(cartReducer, emptyCart)
   const [hydrated, setHydrated] = useState(false)
@@ -137,8 +141,9 @@ export function SellProvider({
       role,
       currency,
       canManageProducts: role === "OWNER" || role === "ADMIN",
+      canUsePayLater,
     }),
-    [state.lines, onBarcode, scanPending, justAddedProductId, role, currency]
+    [state.lines, onBarcode, scanPending, justAddedProductId, role, currency, canUsePayLater]
   )
 
   const scannerEnabled = SCANNER_ROUTES.includes(pathname)

@@ -1,14 +1,16 @@
 import Link from "next/link";
 import {
+  BarChart3Icon,
   ChevronLeftIcon,
   CreditCardIcon,
   PackageIcon,
   ReceiptIcon,
   SettingsIcon,
+  UserPlusIcon,
   UsersIcon,
 } from "lucide-react";
 
-import { requireAdmin } from "@/lib/dal";
+import { requireAdmin, hasPremium } from "@/lib/dal";
 import { AdminNavLink } from "@/app/admin/admin-nav-link";
 import { AdminMobileNav } from "@/app/admin/admin-mobile-nav";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -21,10 +23,11 @@ const NAV_ICON_CLASS = "size-4 shrink-0 group-aria-[current=page]:text-primary";
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const profile = await requireAdmin();
   const storeName = profile.stores.name as string;
+  const isPremium = hasPremium(profile);
 
   return (
     <div className="flex min-h-full flex-col">
-      <BillingBanner />
+      <BillingBanner surface="admin" />
       <div className="flex flex-1">
       <aside className="hidden md:flex md:w-[130px] md:shrink-0 md:flex-col md:border-r">
         <div className="p-4 font-medium">{storeName}</div>
@@ -42,11 +45,25 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             Customers
           </AdminNavLink>
           <AdminNavLink
+            href="/admin/team"
+            icon={<UserPlusIcon className={NAV_ICON_CLASS} />}
+          >
+            Team
+          </AdminNavLink>
+          <AdminNavLink
             href="/admin/sales"
             icon={<ReceiptIcon className={NAV_ICON_CLASS} />}
           >
             Sale Records
           </AdminNavLink>
+          {isPremium && (
+            <AdminNavLink
+              href="/admin/reports"
+              icon={<BarChart3Icon className={NAV_ICON_CLASS} />}
+            >
+              Reports
+            </AdminNavLink>
+          )}
           <AdminNavLink
             href="/admin/settings"
             icon={<SettingsIcon className={NAV_ICON_CLASS} />}
@@ -76,7 +93,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         </div>
       </aside>
         <div className="flex min-w-0 flex-1 flex-col">
-          <AdminMobileNav storeName={storeName} />
+          <AdminMobileNav storeName={storeName} isPremium={isPremium} />
           <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
         </div>
       </div>

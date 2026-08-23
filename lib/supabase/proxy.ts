@@ -22,6 +22,10 @@ const PUBLIC_ROUTES = ["/", "/signin", "/register", "/forgot-password"]
 // - /pricing has to work logged out (it's a marketing page) *and* logged
 //   in (an owner checking what renewal costs), so it can't go in
 //   PUBLIC_ROUTES — that would bounce signed-in visitors to /sell.
+// - /join is a staff invite link: it must work logged out (a brand-new
+//   joiner has no session yet) *and* logged in (an existing user who
+//   isn't in a store yet, or who's mid-way through the "sign in instead"
+//   path) — same reasoning as /reset-password.
 const ALWAYS_ALLOW_ROUTES = [
   "/auth/confirm",
   "/reset-password",
@@ -29,6 +33,7 @@ const ALWAYS_ALLOW_ROUTES = [
   "/opengraph-image",
   "/terms",
   "/pricing",
+  "/join",
 ]
 
 function matches(routes: string[], pathname: string) {

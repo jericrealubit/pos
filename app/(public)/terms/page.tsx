@@ -137,7 +137,21 @@ export default function TermsPage() {
       <div>
         <h2 className="text-lg font-semibold">Contact</h2>
         <p className="mt-3 text-sm text-muted-foreground">
-          Questions about these terms or your data can be sent to WA AI Digital via{" "}
+          Questions about these terms or your data can be sent to WA AI Digital by email at{" "}
+          <a
+            href="mailto:hello@waai.au"
+            className="font-medium text-primary hover:text-primary/80"
+          >
+            hello@waai.au
+          </a>{" "}
+          or by phone/WhatsApp at{" "}
+          <a
+            href="tel:+61491098073"
+            className="font-medium text-primary hover:text-primary/80"
+          >
+            +61 491 098 073
+          </a>
+          , or via{" "}
           <a
             href="https://www.linkedin.com/in/jericrealubit"
             target="_blank"

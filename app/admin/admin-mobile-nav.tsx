@@ -2,7 +2,17 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ChevronLeftIcon, CreditCardIcon, MenuIcon, PackageIcon, ReceiptIcon, SettingsIcon, UsersIcon } from "lucide-react"
+import {
+  BarChart3Icon,
+  ChevronLeftIcon,
+  CreditCardIcon,
+  MenuIcon,
+  PackageIcon,
+  ReceiptIcon,
+  SettingsIcon,
+  UserPlusIcon,
+  UsersIcon,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -18,7 +28,13 @@ import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
 const NAV_ICON_CLASS = "size-4 shrink-0 group-aria-[current=page]:text-primary"
 
-export function AdminMobileNav({ storeName }: { storeName: string }) {
+export function AdminMobileNav({
+  storeName,
+  isPremium,
+}: {
+  storeName: string
+  isPremium: boolean
+}) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -44,9 +60,17 @@ export function AdminMobileNav({ storeName }: { storeName: string }) {
             <AdminNavLink href="/admin/customers" icon={<UsersIcon className={NAV_ICON_CLASS} />}>
               Customers
             </AdminNavLink>
+            <AdminNavLink href="/admin/team" icon={<UserPlusIcon className={NAV_ICON_CLASS} />}>
+              Team
+            </AdminNavLink>
             <AdminNavLink href="/admin/sales" icon={<ReceiptIcon className={NAV_ICON_CLASS} />}>
               Sale Records
             </AdminNavLink>
+            {isPremium && (
+              <AdminNavLink href="/admin/reports" icon={<BarChart3Icon className={NAV_ICON_CLASS} />}>
+                Reports
+              </AdminNavLink>
+            )}
             <AdminNavLink href="/billing" icon={<CreditCardIcon className={NAV_ICON_CLASS} />}>
               Billing
             </AdminNavLink>

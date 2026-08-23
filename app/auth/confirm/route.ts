@@ -16,6 +16,28 @@ export async function GET(request: NextRequest) {
         last_name?: string
         country?: string
         currency?: string
+        invite_token?: string
+      }
+
+      // Checked first: a single signUp call only ever sets one of
+      // invite_token or store_name (registerAction sets the latter,
+      // acceptInviteSignup the former) — but the branch shouldn't
+      // silently trust that invariant, so invite_token wins if somehow
+      // both were ever present, rather than accidentally creating a
+      // second store for someone who was actually invited to an
+      // existing one.
+      if (meta.invite_token) {
+        const { error: rpcError } = await supabase.rpc("accept_staff_invite", {
+          p_token: meta.invite_token,
+          p_first: meta.first_name ?? "",
+          p_last: meta.last_name ?? "",
+        })
+        if (rpcError && !rpcError.message.includes("already belongs to a store")) {
+          return NextResponse.redirect(
+            new URL("/signin?error=invite_failed", request.url)
+          )
+        }
+        return NextResponse.redirect(new URL("/sell", request.url))
       }
 
       if (meta.store_name && meta.first_name && meta.last_name) {

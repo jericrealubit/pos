@@ -9,7 +9,7 @@ export type SuperAdminStoreRow = {
   country: string | null
   created_at: string
   is_paused: boolean
-  plan: "TRIAL" | "PAID"
+  plan: "TRIAL" | "PAID" | "FREE"
   paid_until: string | null
   billing_note: string | null
   owner_first_name: string | null

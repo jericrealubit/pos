@@ -48,22 +48,27 @@ async function checkNotPaused(profile: Profile) {
   if (profile?.stores?.is_paused) redirect("/store-paused")
 }
 
+async function checkNotDeactivated(profile: Profile) {
+  if (profile?.deactivated_at) redirect("/account-deactivated")
+}
+
 /**
- * A lapsed subscription blocks the till and every write, but leaves the
- * admin read screens and the CSV export open. The pay-later book is the
- * data a shop can least afford to lose access to, and holding it hostage
- * buys nothing: refusing new sales is already the leverage. It also keeps
- * reactivation frictionless — the data is intact and waiting when they pay.
+ * Whether a store's premium features (the pay-later book, and future
+ * premium-only features) are unlocked. The till and free-tier writes must
+ * NOT gate on this — scan-and-sell is free forever. Use this in Server
+ * Actions that need to return a friendly upsell instead of redirecting.
  */
-async function checkSubscription(profile: Profile) {
-  if (!profile) return
-  if (!getBillingState(profile.stores).isActive) redirect("/billing")
+export function hasPremium(profile: Profile): boolean {
+  if (!profile) return false
+  return getBillingState(profile.stores).premiumActive
 }
 
 export async function requireUser() {
   const user = await getSession()
   if (!user) redirect("/signin")
-  await checkNotPaused(await getProfile())
+  const profile = await getProfile()
+  await checkNotPaused(profile)
+  await checkNotDeactivated(profile)
   return user
 }
 
@@ -71,29 +76,43 @@ export async function requireAdmin() {
   const profile = await getProfile()
   if (!profile) redirect("/signin")
   await checkNotPaused(profile)
+  await checkNotDeactivated(profile)
   if (profile.role !== "OWNER" && profile.role !== "ADMIN") redirect("/signin")
   return profile
 }
 
 /**
- * Gate for the till and for every write. Call this rather than
- * requireUser in Server Actions that create or change data — hiding the
- * UI is not enough, a Server Action is a public endpoint.
+ * Gate for the till and for every free-tier write (scan-and-sell, cash
+ * sales). Auth + not-paused only — deliberately NOT gated on the
+ * subscription, so a Free-tier store keeps ringing up sales forever. Call
+ * this rather than requireUser in Server Actions that create or change
+ * data — hiding the UI is not enough, a Server Action is a public endpoint.
  */
-export async function requireActiveStore() {
+export async function requireStore() {
   const user = await getSession()
   if (!user) redirect("/signin")
   const profile = await getProfile()
   if (!profile) redirect("/signin")
   await checkNotPaused(profile)
-  await checkSubscription(profile)
+  await checkNotDeactivated(profile)
   return profile
 }
 
-/** Admin-only writes: the catalogue, store settings. */
-export async function requireActiveAdmin() {
+/**
+ * Page-level gate for premium-only routes: redirects a Free-tier store to
+ * /billing. Backstops the UI + action guards for the pay-later flow, and is
+ * the seam future premium pages (staff, reporting) reuse.
+ */
+export async function requirePremiumStore() {
+  const profile = await requireStore()
+  if (!hasPremium(profile)) redirect("/billing")
+  return profile
+}
+
+/** Admin-only pages that are themselves premium (e.g. Reports). */
+export async function requirePremiumAdmin() {
   const profile = await requireAdmin()
-  await checkSubscription(profile)
+  if (!hasPremium(profile)) redirect("/billing")
   return profile
 }
 

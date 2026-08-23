@@ -14,7 +14,8 @@ export const metadata: Metadata = {
   title: "Subscription — Counter",
 }
 
-const SUPPORT_EMAIL = "hello@cpos.au"
+const SUPPORT_EMAIL = "hello@waai.au"
+const SUPPORT_MOBILE = "+61 491 098 073"
 
 /**
  * Payment rails differ by market: an Australian domestic transfer is
@@ -24,8 +25,8 @@ const SUPPORT_EMAIL = "hello@cpos.au"
 const PAYMENT_METHODS: Record<string, string> = {
   AU: "Bank transfer (PayID or BSB/account) — details are on the invoice we email you.",
   NZ: "Bank transfer — details are on the invoice we email you.",
-  PH: "GCash, Maya, or bank transfer — send us a message and we'll pass on the details.",
-  DEFAULT: "PayPal or Wise — send us a message and we'll email you a payment link.",
+  PH: `GCash, Maya, or bank transfer — message us on ${SUPPORT_MOBILE} (WhatsApp) and we'll pass on the details.`,
+  DEFAULT: `PayPal or Wise — message us on ${SUPPORT_MOBILE} (WhatsApp) and we'll email you a payment link.`,
 }
 
 // Top-level route rather than /admin/billing on purpose: the
@@ -48,61 +49,67 @@ export default async function BillingPage() {
   const billing = getBillingState(store)
   const regionCode = regionCodeFor(store.country as string | null)
   const region = regionFor(store.country as string | null)
-  const { daysRemaining, isActive, inGrace, isTrialing } = billing
+  const { daysRemaining, tier, inGrace } = billing
 
-  const heading = isActive
-    ? isTrialing
-      ? `${daysRemaining} ${daysRemaining === 1 ? "day" : "days"} left in your free trial`
-      : "Your subscription is active"
-    : "Your subscription has ended"
+  const paidUntilLabel = billing.paidUntil?.toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })
+
+  const heading =
+    tier === "TRIAL"
+      ? `${daysRemaining} ${daysRemaining === 1 ? "day" : "days"} of Premium left`
+      : tier === "PREMIUM"
+        ? inGrace
+          ? "Your Premium plan needs renewing"
+          : "Premium is active"
+        : "You're on the Free plan"
+
+  // Only PREMIUM (not in grace) is a settled, paying state; every other tier
+  // is a prompt to start or renew Premium.
+  const cardTitle =
+    tier === "PREMIUM" && !inGrace ? "Renew your Premium plan" : "Upgrade to Premium"
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-lg flex-col gap-6 p-4 py-10">
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-semibold">{heading}</h1>
-          {!isActive && <Badge variant="destructive">Ended</Badge>}
+          {tier === "FREE" && <Badge variant="secondary">Free plan</Badge>}
           {inGrace && <Badge variant="outline">Grace period</Badge>}
         </div>
 
-        {isActive ? (
+        {tier === "FREE" ? (
           <p className="mt-2 text-sm text-muted-foreground">
-            {inGrace ? (
-              <>
-                Your access ran out on{" "}
-                {billing.paidUntil?.toLocaleDateString("en-AU", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-                . The till keeps working for {GRACE_DAYS} days while your payment reaches
-                us — get in touch if you&apos;ve already sent it.
-              </>
-            ) : (
-              <>
-                {isTrialing ? "Your trial runs" : "Paid"} until{" "}
-                {billing.paidUntil?.toLocaleDateString("en-AU", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-                .
-              </>
-            )}
+            The till is yours to keep — scan and sell as much as you like, with unlimited
+            products and your full sales history. Upgrade to Premium to unlock the{" "}
+            <span className="font-medium text-foreground">pay-later book</span>: put a sale
+            on a customer&apos;s tab and track running balances. Everything you&apos;ve
+            already recorded stays, and you can still settle existing tabs.
+          </p>
+        ) : tier === "TRIAL" ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            You&apos;ve got the full Premium experience — including the pay-later book —
+            until {paidUntilLabel}. After that the till stays free forever; upgrade any time
+            to keep the book.
+          </p>
+        ) : inGrace ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Premium ran out on {paidUntilLabel}. The pay-later book keeps working for{" "}
+            {GRACE_DAYS} days while your payment reaches us — get in touch if you&apos;ve
+            already sent it.
           </p>
         ) : (
           <p className="mt-2 text-sm text-muted-foreground">
-            The till can&apos;t ring up new sales for now. Your products, sales history and
-            everyone&apos;s pay-later balances are all still here and still readable — nothing
-            has been deleted, and recording a customer settling their tab still works.
+            You&apos;re on the Premium plan until {paidUntilLabel} — the pay-later book and
+            everything else is unlocked.
           </p>
         )}
       </div>
 
       <div className="rounded-lg border p-6">
-        <div className="text-sm font-medium">
-          {region.monthlyAvailable ? "Keep going from" : "Keep going for"}
-        </div>
+        <div className="text-sm font-medium">{cardTitle}</div>
         <div className="mt-2 flex items-baseline gap-1.5">
           <span className="text-3xl font-semibold">
             {formatMoney(region.annual, region.currency)}
@@ -132,7 +139,7 @@ export default async function BillingPage() {
               {SUPPORT_EMAIL}
             </a>{" "}
             with your store name ({store.name as string}) and we&apos;ll send an invoice and
-            switch your access back on as soon as it clears.
+            unlock Premium as soon as it clears.
           </p>
         </div>
       </div>
@@ -146,18 +153,18 @@ export default async function BillingPage() {
             View sales and balances
           </Link>
         )}
-        {isActive && (
-          <Link href="/sell" className={cn(buttonVariants(), "w-full")}>
-            Back to the till
-          </Link>
-        )}
+        {/* The till is free on every tier, so this is always available. */}
+        <Link href="/sell" className={cn(buttonVariants(), "w-full")}>
+          Back to the till
+        </Link>
         <div className="flex justify-center pt-2">
           <SignOutButton />
         </div>
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        Every new store gets {TRIAL_DAYS} days free. See{" "}
+        Every new store gets {TRIAL_DAYS} days of Premium free, then keeps the till on the
+        Free plan. See{" "}
         <Link href="/terms" className="hover:text-foreground">
           Terms &amp; Privacy
         </Link>{" "}

@@ -53,7 +53,7 @@ function PauseToggle({ store }: { store: SuperAdminStoreRow }) {
  */
 function BillingCell({ store }: { store: SuperAdminStoreRow }) {
   const [isPending, startTransition] = useTransition()
-  const { isActive, isTrialing, daysRemaining, inGrace } = getBillingState(store)
+  const { tier, daysRemaining, inGrace } = getBillingState(store)
 
   function extend(interval: "1 month" | "1 year") {
     startTransition(async () => {
@@ -77,16 +77,16 @@ function BillingCell({ store }: { store: SuperAdminStoreRow }) {
     })
   }
 
-  const label = !isActive
-    ? "Lapsed"
-    : inGrace
-      ? "In grace"
-      : `${daysRemaining}d`
+  // A Free store isn't "lapsed/broken" under freemium — it's a valid,
+  // working tier — so it gets a neutral badge, not the destructive one.
+  const label = tier === "FREE" ? "Free" : inGrace ? "In grace" : `${daysRemaining}d`
+  const tierLabel = tier === "TRIAL" ? "Trial" : tier === "PREMIUM" ? "Premium" : "Free"
 
   return (
     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-      <Badge variant={!isActive ? "destructive" : inGrace ? "outline" : "secondary"}>
-        {isTrialing ? "Trial" : "Paid"} · {label}
+      <Badge variant={tier === "FREE" ? "secondary" : inGrace ? "outline" : "secondary"}>
+        {tierLabel}
+        {tier !== "FREE" && ` · ${label}`}
       </Badge>
       <Button size="sm" variant="outline" disabled={isPending} onClick={() => extend("1 month")}>
         +1m

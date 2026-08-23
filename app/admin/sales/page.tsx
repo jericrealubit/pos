@@ -7,7 +7,7 @@ import { SalesDataList, type SaleRow } from "@/components/sales-data-list"
 export default async function SalesPage({ searchParams }: PageProps<"/admin/sales">) {
   const params = await searchParams
   const rawRange = typeof params.range === "string" ? params.range : undefined
-  const range: SalesRange = isSalesRange(rawRange) ? rawRange : "day"
+  const range: SalesRange = isSalesRange(rawRange) ? rawRange : "all"
 
   const [sales, profile] = await Promise.all([getSales(getRangeBounds(range)), getProfile()])
   const currency = profile!.stores.currency as string

@@ -2,12 +2,12 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 
 import { PricingTable } from "@/components/pricing-table"
-import { regionCodeFor, TRIAL_DAYS } from "@/lib/billing"
+import { regionCodeFor } from "@/lib/billing"
 
 export const metadata: Metadata = {
   title: "Pricing — Counter",
   description:
-    "One price per store, billed yearly or monthly. Ninety days free to start — no card needed.",
+    "The till is free forever. Upgrade to Premium for the pay-later book, billed yearly or monthly.",
 }
 
 export default async function PricingPage() {
@@ -20,11 +20,12 @@ export default async function PricingPage() {
     <div className="flex w-full max-w-3xl flex-col items-center gap-10 py-8">
       <div className="max-w-lg text-center">
         <h1 className="text-3xl font-semibold text-balance">
-          {TRIAL_DAYS} days free, then a few dollars a month.
+          The till is free. Forever.
         </h1>
         <p className="mt-3 text-base text-muted-foreground text-balance">
-          Counter costs less than the notebook it replaces. One price covers the whole
-          store — the till, the pay-later book, and the admin dashboard.
+          Scan and sell, manage your catalogue, and keep your sales history at no cost —
+          no trial clock, no card. Upgrade to Premium whenever the pay-later book earns
+          its keep, for less than the notebook it replaces.
         </p>
       </div>
 
@@ -43,23 +44,24 @@ export default async function PricingPage() {
         <div>
           <div className="text-sm font-medium">What happens after the free trial?</div>
           <p className="mt-1 text-sm text-muted-foreground">
-            We get in touch before it ends. If you decide not to continue, the till stops
-            ringing up new sales — but your sales history and everyone&apos;s balances stay
-            readable and exportable. We don&apos;t hold your book hostage.
+            Your store drops to the Free plan — the till keeps ringing up sales forever,
+            and your sales history and everyone&apos;s balances stay readable. The only
+            thing that pauses is starting <em>new</em> pay-later tabs; existing ones can
+            still be settled. Upgrade any time to pick the book back up.
           </p>
         </div>
         <div>
           <div className="text-sm font-medium">Do I need a card to start?</div>
           <p className="mt-1 text-sm text-muted-foreground">
             No. Nothing is charged during the trial and we don&apos;t ask for card details
-            up front.
+            up front — and the Free plan never asks for one at all.
           </p>
         </div>
         <div>
           <div className="text-sm font-medium">Is there a contract?</div>
           <p className="mt-1 text-sm text-muted-foreground">
             No lock-in. Yearly plans are paid up front; monthly plans can be stopped at
-            the end of any month.
+            the end of any month, and you keep the Free plan either way.
           </p>
         </div>
       </div>

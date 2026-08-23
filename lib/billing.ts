@@ -91,20 +91,34 @@ export function currencyForCountry(country?: string | null): string {
 
 const DAY_MS = 86_400_000
 
+/**
+ * The three tiers a store can be in at runtime. FREE is *derived* from a
+ * lapsed `paid_until` — it is not (necessarily) the stored `plan` value, so
+ * no cron is needed to demote a store when its trial or paid period ends.
+ * Both a lapsed trial and a lapsed paid store simply become FREE.
+ */
+export type Tier = "TRIAL" | "PREMIUM" | "FREE"
+
 export type BillingState = {
-  /** The store may ring up sales. */
-  isActive: boolean
-  /** Still inside the free trial (never paid). */
+  /**
+   * Premium features are unlocked (the pay-later book, and future
+   * premium-only features). This is the single entitlement to gate on.
+   * The till itself is NEVER gated on this — scan-and-sell is free forever.
+   */
+  premiumActive: boolean
+  /** Runtime tier, for display and copy. */
+  tier: Tier
+  /** Inside the free trial, with premium still active. */
   isTrialing: boolean
-  /** Past paid_until but inside the grace window — still active. */
+  /** Past paid_until but inside the grace window — premium still active. */
   inGrace: boolean
   /**
    * Whole days until paid_until, rounded up. Negative once past it,
-   * so `daysRemaining > -GRACE_DAYS` is the access test.
+   * so `daysRemaining > -GRACE_DAYS` is the premium-access test.
    */
   daysRemaining: number
   paidUntil: Date | null
-  /** Worth showing a renewal prompt. */
+  /** Worth showing a renewal prompt (trial ending / paid renewing). */
   shouldWarn: boolean
 }
 
@@ -116,32 +130,46 @@ type BillingRow = {
 export function getBillingState(store: BillingRow | null | undefined, now = new Date()): BillingState {
   const paidUntil = store?.paid_until ? new Date(store.paid_until) : null
 
-  // A null paid_until cannot occur: 0017 backfills every existing
-  // store and create_store_and_profile always sets a trial. Treat it
-  // as expired rather than active anyway — a store wrongly locked out
-  // is loud and fixable from the super-admin console in one click,
-  // whereas silently giving the product away is invisible.
+  // A null/invalid paid_until means no premium entitlement — the store is
+  // on the Free tier. The till still works; only premium features are off.
+  // (create_store_and_profile always sets a 90-day trial, so a fresh store
+  // is never here; this is the fail-closed path for premium only.)
   if (!paidUntil || Number.isNaN(paidUntil.getTime())) {
     return {
-      isActive: false,
+      premiumActive: false,
+      tier: "FREE",
       isTrialing: false,
       inGrace: false,
       daysRemaining: 0,
       paidUntil: null,
-      shouldWarn: true,
+      shouldWarn: false,
     }
   }
 
   const daysRemaining = Math.ceil((paidUntil.getTime() - now.getTime()) / DAY_MS)
   const isExpired = daysRemaining <= 0
   const inGrace = isExpired && daysRemaining > -GRACE_DAYS
+  const premiumActive = !isExpired || inGrace
+  const isTrialing = premiumActive && store?.plan === "TRIAL"
 
   return {
-    isActive: !isExpired || inGrace,
-    isTrialing: store?.plan === "TRIAL",
+    premiumActive,
+    tier: premiumActive ? (isTrialing ? "TRIAL" : "PREMIUM") : "FREE",
+    isTrialing,
     inGrace,
     daysRemaining,
     paidUntil,
-    shouldWarn: daysRemaining <= RENEWAL_BANNER_DAYS,
+    // Only nag while premium is still active (trial ending / paid renewing);
+    // a Free store's upsell is handled separately, not via this flag.
+    shouldWarn: premiumActive && daysRemaining <= RENEWAL_BANNER_DAYS,
   }
+}
+
+/**
+ * The entitlement seam for premium features. Today only the pay-later book
+ * checks it; future premium features (staff accounts, advanced reporting)
+ * should gate on this same function rather than re-deriving the rule.
+ */
+export function canUsePayLater(state: BillingState): boolean {
+  return state.premiumActive
 }

@@ -6,26 +6,39 @@ export default async function SuperAdminPage() {
   const stores = await getStoresForSuperAdmin()
   const weeks = signupsByWeek(stores, 6)
 
-  const lapsed = stores.filter((s) => !getBillingState(s).isActive).length
+  // A Free store is a valid, working tier under freemium — not "lapsed" or
+  // broken — so it's tracked as its own count rather than folded into an
+  // alarm-coloured "lapsed" KPI.
+  const premium = stores.filter((s) => getBillingState(s).tier === "PREMIUM").length
+  const trialing = stores.filter((s) => getBillingState(s).tier === "TRIAL").length
+  const free = stores.filter((s) => getBillingState(s).tier === "FREE").length
   const dueSoon = stores.filter((s) => {
-    const { isActive, daysRemaining } = getBillingState(s)
-    return isActive && daysRemaining <= 14
+    const { premiumActive, daysRemaining } = getBillingState(s)
+    return premiumActive && daysRemaining <= 14
   }).length
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-5">
         <div className="rounded-lg border p-4">
           <div className="text-xs text-muted-foreground">Stores</div>
           <div className="mt-1 text-2xl font-semibold">{stores.length}</div>
         </div>
         <div className="rounded-lg border p-4">
-          <div className="text-xs text-muted-foreground">Due within 14 days</div>
-          <div className="mt-1 text-2xl font-semibold">{dueSoon}</div>
+          <div className="text-xs text-muted-foreground">Premium</div>
+          <div className="mt-1 text-2xl font-semibold">{premium}</div>
         </div>
         <div className="rounded-lg border p-4">
-          <div className="text-xs text-muted-foreground">Lapsed</div>
-          <div className="mt-1 text-2xl font-semibold">{lapsed}</div>
+          <div className="text-xs text-muted-foreground">Trialing</div>
+          <div className="mt-1 text-2xl font-semibold">{trialing}</div>
+        </div>
+        <div className="rounded-lg border p-4">
+          <div className="text-xs text-muted-foreground">Free</div>
+          <div className="mt-1 text-2xl font-semibold">{free}</div>
+        </div>
+        <div className="rounded-lg border p-4">
+          <div className="text-xs text-muted-foreground">Due within 14 days</div>
+          <div className="mt-1 text-2xl font-semibold">{dueSoon}</div>
         </div>
       </div>
 

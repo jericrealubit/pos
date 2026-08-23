@@ -191,6 +191,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          deactivated_at: string | null
           first_name: string
           id: string
           last_name: string
@@ -199,6 +200,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deactivated_at?: string | null
           first_name: string
           id: string
           last_name: string
@@ -207,6 +209,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deactivated_at?: string | null
           first_name?: string
           id?: string
           last_name?: string
@@ -372,6 +375,60 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_invites: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          revoked_at: string | null
+          role: Database["counter"]["Enums"]["user_role"]
+          store_id: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          revoked_at?: string | null
+          role: Database["counter"]["Enums"]["user_role"]
+          store_id: string
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          revoked_at?: string | null
+          role?: Database["counter"]["Enums"]["user_role"]
+          store_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_invites_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_invites_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       super_admins: {
         Row: {
           created_at: string
@@ -411,6 +468,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_staff_invite: {
+        Args: { p_first: string; p_last: string; p_token: string }
+        Returns: string
+      }
       auth_is_admin: { Args: never; Returns: boolean }
       auth_is_super_admin: { Args: never; Returns: boolean }
       auth_store_id: { Args: never; Returns: string }
@@ -423,6 +484,16 @@ export type Database = {
         Returns: {
           sale_id: string
           subtotal_cents: number
+        }[]
+      }
+      create_staff_invite: {
+        Args: {
+          p_email: string
+          p_role: Database["counter"]["Enums"]["user_role"]
+        }
+        Returns: {
+          token: string
+          expires_at: string
         }[]
       }
       create_store_and_profile: {
@@ -441,6 +512,48 @@ export type Database = {
           payment_id: string
           balance_cents: number
           settled_count: number
+        }[]
+      }
+      revoke_staff_invite: {
+        Args: { p_invite_id: string }
+        Returns: undefined
+      }
+      sales_revenue_by_day: {
+        Args: { p_from: string | null; p_to: string | null }
+        Returns: {
+          day: string
+          total_cents: number
+          sale_count: number
+        }[]
+      }
+      sales_top_products: {
+        Args: { p_from: string | null; p_to: string | null; p_limit?: number }
+        Returns: {
+          product_id: string | null
+          name: string
+          quantity: number
+          revenue_cents: number
+        }[]
+      }
+      set_staff_deactivated: {
+        Args: { p_deactivated: boolean; p_profile_id: string }
+        Returns: undefined
+      }
+      set_staff_role: {
+        Args: {
+          p_profile_id: string
+          p_role: Database["counter"]["Enums"]["user_role"]
+        }
+        Returns: undefined
+      }
+      staff_invite_preview: {
+        Args: { p_token: string }
+        Returns: {
+          store_name: string
+          email: string
+          role: Database["counter"]["Enums"]["user_role"]
+          plan: Database["counter"]["Enums"]["store_plan"]
+          paid_until: string | null
         }[]
       }
       super_admin_extend_store: {
@@ -484,7 +597,7 @@ export type Database = {
     }
     Enums: {
       sale_status: "PAID" | "UNPAID" | "SETTLED"
-      store_plan: "TRIAL" | "PAID"
+      store_plan: "TRIAL" | "PAID" | "FREE"
       user_role: "OWNER" | "ADMIN" | "CASHIER"
     }
     CompositeTypes: {
@@ -614,7 +727,7 @@ export const Constants = {
   counter: {
     Enums: {
       sale_status: ["PAID", "UNPAID", "SETTLED"],
-      store_plan: ["TRIAL", "PAID"],
+      store_plan: ["TRIAL", "PAID", "FREE"],
       user_role: ["OWNER", "ADMIN", "CASHIER"],
     },
   },
