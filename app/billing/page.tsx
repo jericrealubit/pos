@@ -42,6 +42,9 @@ export default async function BillingPage() {
   }
 
   const store = profile.stores
+  // Only OWNER/ADMIN can reach /admin/*; linking a CASHIER there just
+  // bounces them back here via the admin guard, so hide it for them.
+  const isAdmin = profile.role === "OWNER" || profile.role === "ADMIN"
   const billing = getBillingState(store)
   const regionCode = regionCodeFor(store.country as string | null)
   const region = regionFor(store.country as string | null)
@@ -135,12 +138,14 @@ export default async function BillingPage() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Link
-          href="/admin/sales"
-          className={cn(buttonVariants({ variant: "outline" }), "w-full")}
-        >
-          View sales and balances
-        </Link>
+        {isAdmin && (
+          <Link
+            href="/admin/sales"
+            className={cn(buttonVariants({ variant: "outline" }), "w-full")}
+          >
+            View sales and balances
+          </Link>
+        )}
         {isActive && (
           <Link href="/sell" className={cn(buttonVariants(), "w-full")}>
             Back to the till
