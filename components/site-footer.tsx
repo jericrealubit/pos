@@ -5,7 +5,15 @@ export function SiteFooter() {
   return (
     <footer className="flex flex-col items-center gap-3 border-t p-4 text-xs text-muted-foreground sm:flex-row sm:justify-between">
       <span className="flex flex-col items-center gap-1 sm:flex-row sm:gap-3">
-        &copy; {new Date().getFullYear()} Counter, by WA AI Digital
+        &copy; {new Date().getFullYear()} Counter, by{" "}
+        <a
+          href="https://waai.au/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-foreground"
+        >
+          WA AI Digital
+        </a>
         <Link href="/terms" className="hover:text-foreground">
           Terms &amp; Privacy
         </Link>

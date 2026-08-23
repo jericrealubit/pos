@@ -1,0 +1,830 @@
+
+
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+
+CREATE SCHEMA IF NOT EXISTS "counter";
+
+
+ALTER SCHEMA "counter" OWNER TO "postgres";
+
+
+CREATE TYPE "counter"."sale_status" AS ENUM (
+    'PAID',
+    'UNPAID',
+    'SETTLED'
+);
+
+
+ALTER TYPE "counter"."sale_status" OWNER TO "postgres";
+
+
+CREATE TYPE "counter"."user_role" AS ENUM (
+    'OWNER',
+    'ADMIN',
+    'CASHIER'
+);
+
+
+ALTER TYPE "counter"."user_role" OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "counter"."auth_is_admin"() RETURNS boolean
+    LANGUAGE "sql" STABLE SECURITY DEFINER
+    SET "search_path" TO 'counter', 'public'
+    AS $$
+  select role in ('OWNER','ADMIN') from profiles where id = auth.uid()
+$$;
+
+
+ALTER FUNCTION "counter"."auth_is_admin"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "counter"."auth_is_super_admin"() RETURNS boolean
+    LANGUAGE "sql" STABLE SECURITY DEFINER
+    SET "search_path" TO 'counter', 'public'
+    AS $$
+  select exists (select 1 from counter.super_admins where id = auth.uid())
+$$;
+
+
+ALTER FUNCTION "counter"."auth_is_super_admin"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "counter"."auth_store_id"() RETURNS "uuid"
+    LANGUAGE "sql" STABLE SECURITY DEFINER
+    SET "search_path" TO 'counter', 'public'
+    AS $$
+  select store_id from profiles where id = auth.uid()
+$$;
+
+
+ALTER FUNCTION "counter"."auth_store_id"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "counter"."create_sale"("items" "jsonb", "p_customer_id" "uuid" DEFAULT NULL::"uuid", "p_status" "counter"."sale_status" DEFAULT 'PAID'::"counter"."sale_status") RETURNS TABLE("sale_id" "uuid", "subtotal_cents" integer)
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'counter', 'public'
+    AS $$
+declare
+  v_store_id    uuid;
+  v_sale_id     uuid;
+  v_subtotal    integer := 0;
+  v_item        jsonb;
+  v_product_id  uuid;
+  v_quantity    integer;
+  v_name        text;
+  v_size        text;
+  v_price_cents integer;
+  v_stock       integer;
+begin
+  v_store_id := counter.auth_store_id();
+  if v_store_id is null then
+    raise exception 'No store for the current user';
+  end if;
+
+  if items is null or jsonb_typeof(items) <> 'array' or jsonb_array_length(items) = 0 then
+    raise exception 'Cart is empty';
+  end if;
+
+  if p_status = 'UNPAID' and p_customer_id is null then
+    raise exception 'Pay-later sales need a customer';
+  end if;
+
+  if p_customer_id is not null and not exists (
+    select 1 from counter.customers where id = p_customer_id and store_id = v_store_id
+  ) then
+    raise exception 'Customer not found';
+  end if;
+
+  -- pass 1: validate and price every line before writing anything
+  for v_item in select * from jsonb_array_elements(items) loop
+    v_product_id := (v_item->>'product_id')::uuid;
+    v_quantity   := (v_item->>'quantity')::integer;
+
+    if v_quantity is null or v_quantity <= 0 then
+      raise exception 'Invalid quantity for product %', v_product_id;
+    end if;
+
+    select price_cents, stock_quantity into v_price_cents, v_stock
+    from counter.products
+    where id = v_product_id and store_id = v_store_id and is_archived = false;
+
+    if not found then
+      raise exception 'Product % not found', v_product_id;
+    end if;
+
+    if v_stock < v_quantity then
+      raise exception 'Insufficient stock for product % (has %, requested %)', v_product_id, v_stock, v_quantity;
+    end if;
+
+    v_subtotal := v_subtotal + v_price_cents * v_quantity;
+  end loop;
+
+  insert into counter.sales (store_id, cashier_id, customer_id, status, subtotal_cents)
+  values (v_store_id, auth.uid(), p_customer_id, p_status, v_subtotal)
+  returning id into v_sale_id;
+
+  -- pass 2: write the snapshot lines (name/size/price captured now, never backfilled)
+  -- and deduct stock
+  for v_item in select * from jsonb_array_elements(items) loop
+    v_product_id := (v_item->>'product_id')::uuid;
+    v_quantity   := (v_item->>'quantity')::integer;
+
+    select name, size, price_cents into v_name, v_size, v_price_cents
+    from counter.products
+    where id = v_product_id and store_id = v_store_id and is_archived = false;
+
+    insert into counter.sale_items
+      (sale_id, product_id, name_snapshot, size_snapshot, unit_price_cents, quantity)
+    values (v_sale_id, v_product_id, v_name, v_size, v_price_cents, v_quantity);
+
+    update counter.products
+    set stock_quantity = stock_quantity - v_quantity
+    where id = v_product_id;
+  end loop;
+
+  return query select v_sale_id, v_subtotal;
+end;
+$$;
+
+
+ALTER FUNCTION "counter"."create_sale"("items" "jsonb", "p_customer_id" "uuid", "p_status" "counter"."sale_status") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "counter"."create_store_and_profile"("store_name" "text", "first" "text", "last" "text") RETURNS "uuid"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'counter', 'public'
+    AS $$
+declare new_store uuid;
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+  if exists (select 1 from profiles where id = auth.uid()) then
+    raise exception 'This account already belongs to a store';
+  end if;
+
+  insert into stores (name) values (store_name) returning id into new_store;
+  insert into profiles (id, store_id, first_name, last_name, role)
+  values (auth.uid(), new_store, first, last, 'OWNER');
+
+  return new_store;
+end $$;
+
+
+ALTER FUNCTION "counter"."create_store_and_profile"("store_name" "text", "first" "text", "last" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "counter"."record_payment"("p_customer_id" "uuid", "p_amount_cents" integer) RETURNS TABLE("payment_id" "uuid", "balance_cents" integer, "settled_count" integer)
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'counter', 'public'
+    AS $$
+declare
+  v_store_id       uuid;
+  v_owed           integer;
+  v_paid           integer;
+  v_balance_before integer;
+  v_payment_id     uuid;
+  v_new_balance    integer;
+  v_settled_count  integer := 0;
+begin
+  v_store_id := counter.auth_store_id();
+  if v_store_id is null then
+    raise exception 'No store for the current user';
+  end if;
+
+  if not exists (
+    select 1 from counter.customers where id = p_customer_id and store_id = v_store_id
+  ) then
+    raise exception 'Customer not found';
+  end if;
+
+  if p_amount_cents is null or p_amount_cents <= 0 then
+    raise exception 'Enter an amount greater than zero';
+  end if;
+
+  select coalesce(sum(subtotal_cents), 0) into v_owed
+  from counter.sales
+  where customer_id = p_customer_id and status in ('UNPAID', 'SETTLED');
+
+  select coalesce(sum(amount_cents), 0) into v_paid
+  from counter.payments
+  where customer_id = p_customer_id;
+
+  v_balance_before := v_owed - v_paid;
+
+  if p_amount_cents > v_balance_before then
+    raise exception 'Amount can''t exceed the balance owed';
+  end if;
+
+  insert into counter.payments (store_id, customer_id, taken_by, amount_cents)
+  values (v_store_id, p_customer_id, auth.uid(), p_amount_cents)
+  returning id into v_payment_id;
+
+  v_new_balance := v_balance_before - p_amount_cents;
+
+  if v_new_balance <= 0 then
+    update counter.sales
+    set status = 'SETTLED'
+    where customer_id = p_customer_id and status = 'UNPAID';
+    get diagnostics v_settled_count = row_count;
+  end if;
+
+  return query select v_payment_id, v_new_balance, v_settled_count;
+end;
+$$;
+
+
+ALTER FUNCTION "counter"."record_payment"("p_customer_id" "uuid", "p_amount_cents" integer) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "counter"."super_admin_list_stores"() RETURNS TABLE("store_id" "uuid", "store_name" "text", "currency" "text", "created_at" timestamp with time zone, "is_paused" boolean, "owner_first_name" "text", "owner_last_name" "text", "owner_email" "text")
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'counter', 'public', 'auth'
+    AS $$
+begin
+  if not counter.auth_is_super_admin() then
+    raise exception 'Not authorized';
+  end if;
+
+  return query
+    select s.id, s.name, s.currency, s.created_at, s.is_paused,
+           p.first_name, p.last_name, u.email::text
+    from counter.stores s
+    join counter.profiles p on p.store_id = s.id and p.role = 'OWNER'
+    left join auth.users u on u.id = p.id
+    order by s.created_at desc;
+end;
+$$;
+
+
+ALTER FUNCTION "counter"."super_admin_list_stores"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "counter"."super_admin_set_store_paused"("p_store_id" "uuid", "p_paused" boolean) RETURNS "void"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'counter', 'public'
+    AS $$
+begin
+  if not counter.auth_is_super_admin() then
+    raise exception 'Not authorized';
+  end if;
+
+  update counter.stores set is_paused = p_paused where id = p_store_id;
+end;
+$$;
+
+
+ALTER FUNCTION "counter"."super_admin_set_store_paused"("p_store_id" "uuid", "p_paused" boolean) OWNER TO "postgres";
+
+SET default_tablespace = '';
+
+SET default_table_access_method = "heap";
+
+
+CREATE TABLE IF NOT EXISTS "counter"."categories" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "store_id" "uuid" NOT NULL,
+    "name" "text" NOT NULL
+);
+
+ALTER TABLE ONLY "counter"."categories" FORCE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."categories" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "counter"."customers" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "store_id" "uuid" NOT NULL,
+    "name" "text" NOT NULL,
+    "phone" "text",
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+ALTER TABLE ONLY "counter"."customers" FORCE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."customers" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "counter"."payments" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "store_id" "uuid" NOT NULL,
+    "customer_id" "uuid" NOT NULL,
+    "taken_by" "uuid" NOT NULL,
+    "amount_cents" integer NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "payments_amount_cents_check" CHECK (("amount_cents" > 0))
+);
+
+ALTER TABLE ONLY "counter"."payments" FORCE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."payments" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "counter"."sales" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "store_id" "uuid" NOT NULL,
+    "cashier_id" "uuid" NOT NULL,
+    "customer_id" "uuid",
+    "status" "counter"."sale_status" NOT NULL,
+    "subtotal_cents" integer NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "unpaid_needs_customer" CHECK ((("status" <> 'UNPAID'::"counter"."sale_status") OR ("customer_id" IS NOT NULL)))
+);
+
+ALTER TABLE ONLY "counter"."sales" FORCE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."sales" OWNER TO "postgres";
+
+
+CREATE OR REPLACE VIEW "counter"."customer_balances" WITH ("security_invoker"='true') AS
+ SELECT "c"."id",
+    "c"."store_id",
+    "c"."name",
+    "c"."phone",
+    (COALESCE("s"."owed", (0)::bigint) - COALESCE("p"."paid", (0)::bigint)) AS "balance_cents",
+    "u"."unpaid_sales",
+    "u"."oldest_unpaid"
+   FROM ((("counter"."customers" "c"
+     LEFT JOIN LATERAL ( SELECT "sum"("sales"."subtotal_cents") AS "owed"
+           FROM "counter"."sales"
+          WHERE (("sales"."customer_id" = "c"."id") AND ("sales"."status" = ANY (ARRAY['UNPAID'::"counter"."sale_status", 'SETTLED'::"counter"."sale_status"])))) "s" ON (true))
+     LEFT JOIN LATERAL ( SELECT "count"(*) AS "unpaid_sales",
+            "min"("sales"."created_at") AS "oldest_unpaid"
+           FROM "counter"."sales"
+          WHERE (("sales"."customer_id" = "c"."id") AND ("sales"."status" = 'UNPAID'::"counter"."sale_status"))) "u" ON (true))
+     LEFT JOIN LATERAL ( SELECT "sum"("payments"."amount_cents") AS "paid"
+           FROM "counter"."payments"
+          WHERE ("payments"."customer_id" = "c"."id")) "p" ON (true));
+
+
+ALTER VIEW "counter"."customer_balances" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "counter"."products" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "store_id" "uuid" NOT NULL,
+    "name" "text" NOT NULL,
+    "description" "text",
+    "size" "text",
+    "price_cents" integer NOT NULL,
+    "barcode" "text" NOT NULL,
+    "category_id" "uuid",
+    "is_archived" boolean DEFAULT false NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "stock_quantity" integer DEFAULT 0 NOT NULL,
+    CONSTRAINT "products_price_cents_check" CHECK (("price_cents" >= 0)),
+    CONSTRAINT "products_stock_quantity_check" CHECK (("stock_quantity" >= 0))
+);
+
+ALTER TABLE ONLY "counter"."products" FORCE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."products" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "counter"."profiles" (
+    "id" "uuid" NOT NULL,
+    "store_id" "uuid" NOT NULL,
+    "first_name" "text" NOT NULL,
+    "last_name" "text" NOT NULL,
+    "role" "counter"."user_role" DEFAULT 'CASHIER'::"counter"."user_role" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "counter"."profiles" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "counter"."sale_items" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "sale_id" "uuid" NOT NULL,
+    "product_id" "uuid",
+    "name_snapshot" "text" NOT NULL,
+    "size_snapshot" "text",
+    "unit_price_cents" integer NOT NULL,
+    "quantity" integer NOT NULL,
+    CONSTRAINT "sale_items_quantity_check" CHECK (("quantity" > 0))
+);
+
+ALTER TABLE ONLY "counter"."sale_items" FORCE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."sale_items" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "counter"."stores" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "name" "text" NOT NULL,
+    "currency" "text" DEFAULT 'USD'::"text" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "is_paused" boolean DEFAULT false NOT NULL,
+    "address" "text",
+    "phone" "text",
+    "low_stock_threshold" integer DEFAULT 5 NOT NULL,
+    CONSTRAINT "stores_low_stock_threshold_check" CHECK (("low_stock_threshold" >= 0))
+);
+
+
+ALTER TABLE "counter"."stores" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "counter"."super_admins" (
+    "id" "uuid" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+ALTER TABLE ONLY "counter"."super_admins" FORCE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."super_admins" OWNER TO "postgres";
+
+
+ALTER TABLE ONLY "counter"."categories"
+    ADD CONSTRAINT "categories_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "counter"."categories"
+    ADD CONSTRAINT "categories_store_id_name_key" UNIQUE ("store_id", "name");
+
+
+
+ALTER TABLE ONLY "counter"."customers"
+    ADD CONSTRAINT "customers_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "counter"."payments"
+    ADD CONSTRAINT "payments_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "counter"."products"
+    ADD CONSTRAINT "products_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "counter"."products"
+    ADD CONSTRAINT "products_store_id_barcode_key" UNIQUE ("store_id", "barcode");
+
+
+
+ALTER TABLE ONLY "counter"."profiles"
+    ADD CONSTRAINT "profiles_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "counter"."sale_items"
+    ADD CONSTRAINT "sale_items_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "counter"."sales"
+    ADD CONSTRAINT "sales_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "counter"."stores"
+    ADD CONSTRAINT "stores_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "counter"."super_admins"
+    ADD CONSTRAINT "super_admins_pkey" PRIMARY KEY ("id");
+
+
+
+CREATE INDEX "customers_store_id_name_idx" ON "counter"."customers" USING "btree" ("store_id", "name");
+
+
+
+CREATE INDEX "payments_customer_id_idx" ON "counter"."payments" USING "btree" ("customer_id");
+
+
+
+CREATE INDEX "products_store_id_name_idx" ON "counter"."products" USING "btree" ("store_id", "name");
+
+
+
+CREATE INDEX "profiles_store_id_idx" ON "counter"."profiles" USING "btree" ("store_id");
+
+
+
+CREATE INDEX "sale_items_sale_id_idx" ON "counter"."sale_items" USING "btree" ("sale_id");
+
+
+
+CREATE INDEX "sales_customer_id_status_idx" ON "counter"."sales" USING "btree" ("customer_id", "status");
+
+
+
+CREATE INDEX "sales_store_id_created_at_idx" ON "counter"."sales" USING "btree" ("store_id", "created_at" DESC);
+
+
+
+ALTER TABLE ONLY "counter"."categories"
+    ADD CONSTRAINT "categories_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "counter"."stores"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "counter"."customers"
+    ADD CONSTRAINT "customers_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "counter"."stores"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "counter"."payments"
+    ADD CONSTRAINT "payments_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "counter"."customers"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "counter"."payments"
+    ADD CONSTRAINT "payments_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "counter"."stores"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "counter"."payments"
+    ADD CONSTRAINT "payments_taken_by_fkey" FOREIGN KEY ("taken_by") REFERENCES "counter"."profiles"("id");
+
+
+
+ALTER TABLE ONLY "counter"."products"
+    ADD CONSTRAINT "products_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "counter"."categories"("id") ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "counter"."products"
+    ADD CONSTRAINT "products_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "counter"."stores"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "counter"."profiles"
+    ADD CONSTRAINT "profiles_id_fkey" FOREIGN KEY ("id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "counter"."profiles"
+    ADD CONSTRAINT "profiles_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "counter"."stores"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "counter"."sale_items"
+    ADD CONSTRAINT "sale_items_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "counter"."products"("id") ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "counter"."sale_items"
+    ADD CONSTRAINT "sale_items_sale_id_fkey" FOREIGN KEY ("sale_id") REFERENCES "counter"."sales"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "counter"."sales"
+    ADD CONSTRAINT "sales_cashier_id_fkey" FOREIGN KEY ("cashier_id") REFERENCES "counter"."profiles"("id");
+
+
+
+ALTER TABLE ONLY "counter"."sales"
+    ADD CONSTRAINT "sales_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "counter"."customers"("id") ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "counter"."sales"
+    ADD CONSTRAINT "sales_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "counter"."stores"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "counter"."super_admins"
+    ADD CONSTRAINT "super_admins_id_fkey" FOREIGN KEY ("id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE "counter"."categories" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."customers" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "insert_customers" ON "counter"."customers" FOR INSERT WITH CHECK (("store_id" = "counter"."auth_store_id"()));
+
+
+
+CREATE POLICY "insert_payments" ON "counter"."payments" FOR INSERT WITH CHECK ((("store_id" = "counter"."auth_store_id"()) AND ("taken_by" = "auth"."uid"())));
+
+
+
+CREATE POLICY "insert_sale_items" ON "counter"."sale_items" FOR INSERT WITH CHECK ((EXISTS ( SELECT 1
+   FROM "counter"."sales" "s"
+  WHERE (("s"."id" = "sale_items"."sale_id") AND ("s"."store_id" = "counter"."auth_store_id"())))));
+
+
+
+CREATE POLICY "make_sales" ON "counter"."sales" FOR INSERT WITH CHECK ((("store_id" = "counter"."auth_store_id"()) AND ("cashier_id" = "auth"."uid"())));
+
+
+
+ALTER TABLE "counter"."payments" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."products" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."profiles" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "read_categories" ON "counter"."categories" FOR SELECT USING (("store_id" = "counter"."auth_store_id"()));
+
+
+
+CREATE POLICY "read_customers" ON "counter"."customers" FOR SELECT USING (("store_id" = "counter"."auth_store_id"()));
+
+
+
+CREATE POLICY "read_own_super_admin" ON "counter"."super_admins" FOR SELECT USING (("id" = "auth"."uid"()));
+
+
+
+CREATE POLICY "read_payments" ON "counter"."payments" FOR SELECT USING (("store_id" = "counter"."auth_store_id"()));
+
+
+
+CREATE POLICY "read_products" ON "counter"."products" FOR SELECT USING (("store_id" = "counter"."auth_store_id"()));
+
+
+
+CREATE POLICY "read_profiles" ON "counter"."profiles" FOR SELECT USING (("store_id" = "counter"."auth_store_id"()));
+
+
+
+CREATE POLICY "read_sale_items" ON "counter"."sale_items" FOR SELECT USING ((EXISTS ( SELECT 1
+   FROM "counter"."sales" "s"
+  WHERE (("s"."id" = "sale_items"."sale_id") AND ("s"."store_id" = "counter"."auth_store_id"())))));
+
+
+
+CREATE POLICY "read_sales" ON "counter"."sales" FOR SELECT USING (("store_id" = "counter"."auth_store_id"()));
+
+
+
+CREATE POLICY "read_stores" ON "counter"."stores" FOR SELECT USING (("id" = "counter"."auth_store_id"()));
+
+
+
+ALTER TABLE "counter"."sale_items" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."sales" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."stores" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "counter"."super_admins" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "update_customers" ON "counter"."customers" FOR UPDATE USING ((("store_id" = "counter"."auth_store_id"()) AND "counter"."auth_is_admin"())) WITH CHECK ((("store_id" = "counter"."auth_store_id"()) AND "counter"."auth_is_admin"()));
+
+
+
+CREATE POLICY "update_own_profile" ON "counter"."profiles" FOR UPDATE USING (("id" = "auth"."uid"())) WITH CHECK ((("id" = "auth"."uid"()) AND ("store_id" = "counter"."auth_store_id"())));
+
+
+
+CREATE POLICY "update_store" ON "counter"."stores" FOR UPDATE USING ((("id" = "counter"."auth_store_id"()) AND "counter"."auth_is_admin"())) WITH CHECK ((("id" = "counter"."auth_store_id"()) AND "counter"."auth_is_admin"()));
+
+
+
+CREATE POLICY "write_categories" ON "counter"."categories" USING ((("store_id" = "counter"."auth_store_id"()) AND "counter"."auth_is_admin"())) WITH CHECK ((("store_id" = "counter"."auth_store_id"()) AND "counter"."auth_is_admin"()));
+
+
+
+CREATE POLICY "write_products" ON "counter"."products" USING ((("store_id" = "counter"."auth_store_id"()) AND "counter"."auth_is_admin"())) WITH CHECK ((("store_id" = "counter"."auth_store_id"()) AND "counter"."auth_is_admin"()));
+
+
+
+GRANT USAGE ON SCHEMA "counter" TO "authenticated";
+GRANT USAGE ON SCHEMA "counter" TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "counter"."auth_is_admin"() TO "authenticated";
+GRANT ALL ON FUNCTION "counter"."auth_is_admin"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "counter"."auth_is_super_admin"() TO "authenticated";
+GRANT ALL ON FUNCTION "counter"."auth_is_super_admin"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "counter"."auth_store_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "counter"."auth_store_id"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "counter"."create_sale"("items" "jsonb", "p_customer_id" "uuid", "p_status" "counter"."sale_status") TO "authenticated";
+GRANT ALL ON FUNCTION "counter"."create_sale"("items" "jsonb", "p_customer_id" "uuid", "p_status" "counter"."sale_status") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "counter"."create_store_and_profile"("store_name" "text", "first" "text", "last" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "counter"."create_store_and_profile"("store_name" "text", "first" "text", "last" "text") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "counter"."record_payment"("p_customer_id" "uuid", "p_amount_cents" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "counter"."record_payment"("p_customer_id" "uuid", "p_amount_cents" integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "counter"."super_admin_list_stores"() TO "authenticated";
+GRANT ALL ON FUNCTION "counter"."super_admin_list_stores"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "counter"."super_admin_set_store_paused"("p_store_id" "uuid", "p_paused" boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "counter"."super_admin_set_store_paused"("p_store_id" "uuid", "p_paused" boolean) TO "service_role";
+
+
+
+GRANT ALL ON TABLE "counter"."categories" TO "authenticated";
+GRANT ALL ON TABLE "counter"."categories" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "counter"."customers" TO "authenticated";
+GRANT ALL ON TABLE "counter"."customers" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "counter"."payments" TO "authenticated";
+GRANT ALL ON TABLE "counter"."payments" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "counter"."sales" TO "authenticated";
+GRANT ALL ON TABLE "counter"."sales" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "counter"."customer_balances" TO "authenticated";
+GRANT ALL ON TABLE "counter"."customer_balances" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "counter"."products" TO "authenticated";
+GRANT ALL ON TABLE "counter"."products" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "counter"."profiles" TO "authenticated";
+GRANT ALL ON TABLE "counter"."profiles" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "counter"."sale_items" TO "authenticated";
+GRANT ALL ON TABLE "counter"."sale_items" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "counter"."stores" TO "authenticated";
+GRANT ALL ON TABLE "counter"."stores" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "counter"."super_admins" TO "authenticated";
+GRANT ALL ON TABLE "counter"."super_admins" TO "service_role";
+
+
+
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "counter" GRANT ALL ON SEQUENCES TO "authenticated";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "counter" GRANT ALL ON SEQUENCES TO "service_role";
+
+
+
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "counter" GRANT ALL ON FUNCTIONS TO "authenticated";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "counter" GRANT ALL ON FUNCTIONS TO "service_role";
+
+
+
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "counter" GRANT ALL ON TABLES TO "authenticated";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "counter" GRANT ALL ON TABLES TO "service_role";
+
+
+
+
