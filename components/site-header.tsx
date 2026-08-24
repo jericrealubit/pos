@@ -4,6 +4,7 @@ import Image from "next/image"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { LinkPendingIndicator } from "@/components/link-pending-indicator"
+import { SiteMobileNav } from "@/components/site-mobile-nav"
 
 export function SiteHeader() {
   return (
@@ -12,7 +13,7 @@ export function SiteHeader() {
         <Image src="/logo-mark.png" alt="" width={28} height={28} />
         Counter
       </Link>
-      <nav className="flex items-center gap-4">
+      <nav className="hidden items-center gap-4 md:flex">
         <Link
           href="/pricing"
           className="text-sm text-muted-foreground hover:text-foreground"
@@ -37,6 +38,7 @@ export function SiteHeader() {
           <LinkPendingIndicator className="size-3.5" />
         </Link>
       </nav>
+      <SiteMobileNav />
     </header>
   )
 }
