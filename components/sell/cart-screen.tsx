@@ -8,6 +8,7 @@ import { useSellCart } from "@/components/sell/sell-provider"
 import { TillAppBar } from "@/components/sell/till-app-bar"
 import { CartLines } from "@/components/sell/cart-lines"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { EmptyState } from "@/components/empty-state"
 import { toast } from "@/components/ui/toast"
@@ -17,7 +18,7 @@ import { createSale } from "@/app/actions/sales"
 
 export function CartScreen() {
   const router = useRouter()
-  const { lines, itemCount, totalCents, currency, clear } = useSellCart()
+  const { lines, itemCount, totalCents, currency, clear, canUsePayLater } = useSellCart()
   const [isPending, startTransition] = useTransition()
   // clear() empties the cart synchronously, re-rendering this screen while
   // the router.push navigation is still in flight — this flag stops that
@@ -105,7 +106,10 @@ export function CartScreen() {
         <RadioGroup
           value="PAID"
           onValueChange={(value) => {
-            if (value === "UNPAID") router.push("/sell/customer")
+            if (value !== "UNPAID") return
+            // On the Free tier the pay-later book is locked — send them to the
+            // upgrade page instead of into the customer flow.
+            router.push(canUsePayLater ? "/sell/customer" : "/billing")
           }}
           className="overflow-hidden rounded-lg border"
         >
@@ -116,8 +120,13 @@ export function CartScreen() {
           </label>
           <label className="flex items-center gap-3 border-t p-3 text-sm">
             <RadioGroupItem value="UNPAID" />
-            <span className="flex-1">Pay later</span>
-            <span className="text-xs text-muted-foreground">Goes in the book</span>
+            <span className="flex flex-1 items-center gap-2">
+              Pay later
+              {!canUsePayLater && <Badge variant="secondary">Premium</Badge>}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {canUsePayLater ? "Goes in the book" : "Upgrade to use the book"}
+            </span>
           </label>
         </RadioGroup>
       </div>

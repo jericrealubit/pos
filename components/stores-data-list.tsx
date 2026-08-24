@@ -8,8 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "@/components/ui/toast"
 import { Spinner } from "@/components/ui/spinner"
-import { storeSetPaused } from "@/app/actions/super-admin"
+import { storeSetPaused, storeExtendBilling } from "@/app/actions/super-admin"
 import type { SuperAdminStoreRow } from "@/lib/dal/super-admin"
+import { getBillingState } from "@/lib/billing"
+import { Button } from "@/components/ui/button"
 
 function PauseToggle({ store }: { store: SuperAdminStoreRow }) {
   const [isPending, startTransition] = useTransition()
@@ -44,6 +46,59 @@ function PauseToggle({ store }: { store: SuperAdminStoreRow }) {
   )
 }
 
+/**
+ * The billing system in v1: what each store owes and when, and a
+ * one-click way to record that they paid. Sort by this column to see
+ * who needs chasing this week.
+ */
+function BillingCell({ store }: { store: SuperAdminStoreRow }) {
+  const [isPending, startTransition] = useTransition()
+  const { tier, daysRemaining, inGrace } = getBillingState(store)
+
+  function extend(interval: "1 month" | "1 year") {
+    startTransition(async () => {
+      const note = window.prompt(
+        `Payment note for ${store.store_name} (how it was paid, reference):`,
+        store.billing_note ?? ""
+      )
+      // Cancelling the prompt cancels the extension — this writes money
+      // state, so an accidental click shouldn't go through.
+      if (note === null) return
+
+      const result = await storeExtendBilling(store.store_id, interval, note)
+      if (!result.ok) {
+        toast.add({ title: result.formError ?? "Could not extend the store.", type: "error" })
+        return
+      }
+      toast.add({
+        title: `${store.store_name} paid until ${new Date(result.data.paidUntil).toLocaleDateString()}`,
+        type: "success",
+      })
+    })
+  }
+
+  // A Free store isn't "lapsed/broken" under freemium — it's a valid,
+  // working tier — so it gets a neutral badge, not the destructive one.
+  const label = tier === "FREE" ? "Free" : inGrace ? "In grace" : `${daysRemaining}d`
+  const tierLabel = tier === "TRIAL" ? "Trial" : tier === "PREMIUM" ? "Premium" : "Free"
+
+  return (
+    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+      <Badge variant={tier === "FREE" ? "secondary" : inGrace ? "outline" : "secondary"}>
+        {tierLabel}
+        {tier !== "FREE" && ` · ${label}`}
+      </Badge>
+      <Button size="sm" variant="outline" disabled={isPending} onClick={() => extend("1 month")}>
+        +1m
+      </Button>
+      <Button size="sm" variant="outline" disabled={isPending} onClick={() => extend("1 year")}>
+        +1y
+      </Button>
+      {isPending && <Spinner className="size-3.5" />}
+    </div>
+  )
+}
+
 export function StoresDataList({ stores }: { stores: SuperAdminStoreRow[] }) {
   const columns: LegacyColumnDef<SuperAdminStoreRow>[] = [
     {
@@ -72,6 +127,18 @@ export function StoresDataList({ stores }: { stores: SuperAdminStoreRow[] }) {
       cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
     },
     {
+      id: "billing",
+      accessorFn: (s) => getBillingState(s).daysRemaining,
+      header: "Billing",
+      cell: ({ row }) => <BillingCell store={row.original} />,
+    },
+    {
+      id: "country",
+      accessorFn: (s) => s.country ?? "",
+      header: "Country",
+      cell: ({ row }) => row.original.country ?? "—",
+    },
+    {
       id: "status",
       accessorFn: (s) => (s.is_paused ? "paused" : "active"),
       header: "Access",
@@ -93,6 +160,9 @@ export function StoresDataList({ stores }: { stores: SuperAdminStoreRow[] }) {
               {`${s.owner_first_name ?? ""} ${s.owner_last_name ?? ""}`.trim() || "—"}
             </div>
             <div className="truncate text-sm text-muted-foreground">{s.owner_email ?? "—"}</div>
+            <div className="mt-2">
+              <BillingCell store={s} />
+            </div>
           </div>
           <PauseToggle store={s} />
         </div>

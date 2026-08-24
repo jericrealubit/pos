@@ -4,6 +4,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { createClient, createImplicitFlowClient } from "@/lib/supabase/server"
+import { currencyForCountry } from "@/lib/billing"
 import {
   registerSchema,
   signinSchema,
@@ -24,6 +25,8 @@ export async function registerAction(
     return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors }
   }
   const { storeName, firstName, lastName, email, password } = parsed.data
+  const country = parsed.data.country.toUpperCase()
+  const currency = currencyForCountry(country)
 
   const origin = (await headers()).get("origin")
   const supabase = await createClient()
@@ -33,7 +36,13 @@ export async function registerAction(
     options: {
       // Store/name fields ride along on the confirmation email's user object
       // since there's no session yet to call create_store_and_profile with.
-      data: { store_name: storeName, first_name: firstName, last_name: lastName },
+      data: {
+        store_name: storeName,
+        first_name: firstName,
+        last_name: lastName,
+        country,
+        currency,
+      },
       emailRedirectTo: origin ? `${origin}/auth/confirm` : undefined,
     },
   })
@@ -53,6 +62,8 @@ export async function registerAction(
     store_name: storeName,
     first: firstName,
     last: lastName,
+    p_currency: currency,
+    p_country: country,
   })
   if (rpcError) {
     return { ok: false, formError: "Could not create your store. Try again." }

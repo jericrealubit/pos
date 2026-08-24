@@ -2,7 +2,18 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ChevronLeftIcon, MenuIcon, PackageIcon, ReceiptIcon, SettingsIcon, UsersIcon } from "lucide-react"
+import {
+  BarChart3Icon,
+  ChevronLeftIcon,
+  CreditCardIcon,
+  LayoutDashboardIcon,
+  MenuIcon,
+  PackageIcon,
+  ReceiptIcon,
+  SettingsIcon,
+  UserPlusIcon,
+  UsersIcon,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -18,7 +29,13 @@ import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
 const NAV_ICON_CLASS = "size-4 shrink-0 group-aria-[current=page]:text-primary"
 
-export function AdminMobileNav({ storeName }: { storeName: string }) {
+export function AdminMobileNav({
+  storeName,
+  isPremium,
+}: {
+  storeName: string
+  isPremium: boolean
+}) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -38,14 +55,28 @@ export function AdminMobileNav({ storeName }: { storeName: string }) {
             <SheetTitle>{storeName}</SheetTitle>
           </SheetHeader>
           <nav onClick={() => setOpen(false)}>
+            <AdminNavLink href="/admin" exact icon={<LayoutDashboardIcon className={NAV_ICON_CLASS} />}>
+              Overview
+            </AdminNavLink>
             <AdminNavLink href="/admin/products" icon={<PackageIcon className={NAV_ICON_CLASS} />}>
               Products
             </AdminNavLink>
             <AdminNavLink href="/admin/customers" icon={<UsersIcon className={NAV_ICON_CLASS} />}>
               Customers
             </AdminNavLink>
+            <AdminNavLink href="/admin/team" icon={<UserPlusIcon className={NAV_ICON_CLASS} />}>
+              Team
+            </AdminNavLink>
             <AdminNavLink href="/admin/sales" icon={<ReceiptIcon className={NAV_ICON_CLASS} />}>
               Sale Records
+            </AdminNavLink>
+            {isPremium && (
+              <AdminNavLink href="/admin/reports" icon={<BarChart3Icon className={NAV_ICON_CLASS} />}>
+                Reports
+              </AdminNavLink>
+            )}
+            <AdminNavLink href="/billing" icon={<CreditCardIcon className={NAV_ICON_CLASS} />}>
+              Billing
             </AdminNavLink>
             <AdminNavLink href="/admin/settings" icon={<SettingsIcon className={NAV_ICON_CLASS} />}>
               Settings
@@ -68,7 +99,9 @@ export function AdminMobileNav({ storeName }: { storeName: string }) {
           </div>
         </SheetContent>
       </Sheet>
-      <span className="font-medium">{storeName}</span>
+      <Link href="/admin" className="font-medium">
+        {storeName}
+      </Link>
     </div>
   )
 }

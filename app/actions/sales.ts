@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
-import { requireUser } from "@/lib/dal"
+import { requireUser, requireStore, hasPremium } from "@/lib/dal"
 import { createSaleSchema, type CreateSaleInput } from "@/lib/schemas/sale"
 import type { ActionResult } from "@/lib/actions/types"
 
@@ -38,13 +38,27 @@ export async function lookupByBarcode(
 export async function createSale(
   input: CreateSaleInput
 ): Promise<ActionResult<{ saleId: string; subtotalCents: number }>> {
-  await requireUser()
+  const profile = await requireStore()
   const parsed = createSaleSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, formError: "Cart is empty." }
   }
-  if (parsed.data.status === "UNPAID" && !parsed.data.customerId) {
-    return { ok: false, formError: "Choose a customer for pay-later sales." }
+  // Cash sales are free forever; only the pay-later book is premium. This is
+  // the authoritative gate — the RPC/RLS are deliberately left alone, because
+  // this is a monetization gate, not a security boundary: a store owner who
+  // hits the raw Data API to self-serve an UNPAID sale only cheats themselves
+  // out of paying, on their own single-tenant data.
+  if (parsed.data.status === "UNPAID") {
+    if (!hasPremium(profile)) {
+      return {
+        ok: false,
+        code: "UPGRADE",
+        formError: "The pay-later book is a Premium feature.",
+      }
+    }
+    if (!parsed.data.customerId) {
+      return { ok: false, formError: "Choose a customer for pay-later sales." }
+    }
   }
 
   const supabase = await createClient()

@@ -39,8 +39,38 @@ export default function TermsPage() {
             fraudulent transactions or to store data you don&apos;t have the right to hold.
           </p>
           <p>
-            <span className="font-medium text-foreground">Fees.</span> Any fees for using Counter
-            are communicated to you before they apply — nothing is charged without notice.
+            <span className="font-medium text-foreground">Free trial.</span> Every new store
+            starts with a 90-day free trial. No payment details are required to begin it and
+            nothing is charged during it. We&apos;ll contact you before it ends.
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Fees.</span> After the trial, Counter
+            is charged per store, yearly or monthly, at the price shown on our{" "}
+            <a href="/pricing" className="font-medium text-primary hover:text-primary/80">
+              pricing page
+            </a>{" "}
+            for the country your store is registered in, in that country&apos;s currency. Prices
+            are inclusive of GST where it applies. We&apos;ll always tell you the price before it
+            applies, and give you at least 30 days&apos; notice in writing before changing what
+            you pay for an existing store.
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Cancellation and refunds.</span> There
+            is no lock-in contract and no cancellation fee. Monthly plans can be stopped at the
+            end of any month; yearly plans run to the end of the period you paid for. Tell us you
+            want to stop and we won&apos;t invoice you again. If you cancel a yearly plan within
+            14 days of paying and haven&apos;t meaningfully used it in that period, we&apos;ll
+            refund it in full. Beyond that we don&apos;t refund unused time, but you keep access
+            until the period ends. Nothing here limits your rights under the Australian Consumer
+            Law, the New Zealand Consumer Guarantees Act, or the equivalent consumer protections
+            where you live.
+          </p>
+          <p>
+            <span className="font-medium text-foreground">If you stop paying.</span> When a
+            subscription lapses, the till stops ringing up new sales. Your products, sales
+            history and customer balances stay readable and exportable, and recording that a
+            customer has settled their tab keeps working — we don&apos;t lock you out of your own
+            records to collect payment. Contact us any time to switch selling back on.
           </p>
           <p>
             <span className="font-medium text-foreground">Availability.</span> Counter is
@@ -107,7 +137,21 @@ export default function TermsPage() {
       <div>
         <h2 className="text-lg font-semibold">Contact</h2>
         <p className="mt-3 text-sm text-muted-foreground">
-          Questions about these terms or your data can be sent to WA AI Digital via{" "}
+          Questions about these terms or your data can be sent to WA AI Digital by email at{" "}
+          <a
+            href="mailto:hello@waai.au"
+            className="font-medium text-primary hover:text-primary/80"
+          >
+            hello@waai.au
+          </a>{" "}
+          or by phone/WhatsApp at{" "}
+          <a
+            href="tel:+61491098073"
+            className="font-medium text-primary hover:text-primary/80"
+          >
+            +61 491 098 073
+          </a>
+          , or via{" "}
           <a
             href="https://www.linkedin.com/in/jericrealubit"
             target="_blank"
