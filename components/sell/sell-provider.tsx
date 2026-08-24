@@ -19,6 +19,7 @@ import {
   cartTotalCents,
   emptyCart,
   type CartLine,
+  type CartState,
 } from "@/lib/pos/cart-reducer"
 import { playSuccessBeep } from "@/lib/pos/beep"
 import { toast } from "@/components/ui/toast"
@@ -27,7 +28,14 @@ import { HardwareScannerInput } from "@/components/sell/hardware-scanner-input"
 import { UnknownBarcodeDialog } from "@/components/sell/unknown-barcode-dialog"
 
 const STORAGE_KEY = "counter:cart"
+// localStorage (not sessionStorage) so an in-progress sale survives a tab
+// close, a browser crash, or an accidental navigation away — not just an
+// in-tab reload. Guarded by an age check so a cart abandoned yesterday
+// doesn't silently reappear at the till the next morning.
+const CART_MAX_AGE_MS = 12 * 60 * 60 * 1000 // 12 hours
 const SCANNER_ROUTES = ["/sell", "/sell/scan"]
+
+type PersistedCart = { savedAt: number; state: CartState }
 
 type Role = "OWNER" | "ADMIN" | "CASHIER"
 
@@ -74,17 +82,26 @@ export function SellProvider({
   const [scanPending, startScanTransition] = useTransition()
   const pathname = usePathname()
 
-  // Hydrate from sessionStorage after mount, not in a lazy initializer —
+  // Hydrate from localStorage after mount, not in a lazy initializer —
   // the first client render must match the server's empty-cart render.
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem(STORAGE_KEY)
-      if (raw) dispatch({ type: "HYDRATE", state: JSON.parse(raw) })
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw) as PersistedCart
+        const fresh = Date.now() - parsed.savedAt < CART_MAX_AGE_MS
+        if (fresh && parsed.state?.lines?.length) {
+          dispatch({ type: "HYDRATE", state: parsed.state })
+        } else {
+          // Stale or empty — drop it so it can't resurface later.
+          localStorage.removeItem(STORAGE_KEY)
+        }
+      }
     } catch {
       // corrupt/unavailable storage — start with an empty cart
     }
-    // One-time sync from a browser-only external system (sessionStorage
-    // isn't available during SSR) — the correct use of an effect, not the
+    // One-time sync from a browser-only external system (localStorage isn't
+    // available during SSR) — the correct use of an effect, not the
     // cascading-render case this rule is meant to catch.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setHydrated(true)
@@ -92,7 +109,18 @@ export function SellProvider({
 
   useEffect(() => {
     if (!hydrated) return
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    try {
+      if (state.lines.length === 0) {
+        // Keep storage clean: a cleared cart (e.g. after a completed sale)
+        // shouldn't leave a stub that a later mount tries to restore.
+        localStorage.removeItem(STORAGE_KEY)
+      } else {
+        const payload: PersistedCart = { savedAt: Date.now(), state }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+      }
+    } catch {
+      // storage full/unavailable — the in-memory cart still works
+    }
   }, [state, hydrated])
 
   const onBarcode = useCallback((code: string) => {

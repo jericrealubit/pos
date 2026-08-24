@@ -43,7 +43,7 @@ export function TillNav({
       )}
       {canManageProducts && (
         <Link
-          href="/admin/products"
+          href="/admin"
           className={cn(
             buttonVariants({ variant: active === "admin" ? "default" : "outline", size: "till" }),
             "flex-1 gap-1.5"

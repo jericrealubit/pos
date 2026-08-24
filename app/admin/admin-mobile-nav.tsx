@@ -6,6 +6,7 @@ import {
   BarChart3Icon,
   ChevronLeftIcon,
   CreditCardIcon,
+  LayoutDashboardIcon,
   MenuIcon,
   PackageIcon,
   ReceiptIcon,
@@ -54,6 +55,9 @@ export function AdminMobileNav({
             <SheetTitle>{storeName}</SheetTitle>
           </SheetHeader>
           <nav onClick={() => setOpen(false)}>
+            <AdminNavLink href="/admin" exact icon={<LayoutDashboardIcon className={NAV_ICON_CLASS} />}>
+              Overview
+            </AdminNavLink>
             <AdminNavLink href="/admin/products" icon={<PackageIcon className={NAV_ICON_CLASS} />}>
               Products
             </AdminNavLink>
@@ -95,7 +99,9 @@ export function AdminMobileNav({
           </div>
         </SheetContent>
       </Sheet>
-      <span className="font-medium">{storeName}</span>
+      <Link href="/admin" className="font-medium">
+        {storeName}
+      </Link>
     </div>
   )
 }

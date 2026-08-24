@@ -3,6 +3,7 @@ import {
   BarChart3Icon,
   ChevronLeftIcon,
   CreditCardIcon,
+  LayoutDashboardIcon,
   PackageIcon,
   ReceiptIcon,
   SettingsIcon,
@@ -30,8 +31,17 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       <BillingBanner surface="admin" />
       <div className="flex flex-1">
       <aside className="hidden md:flex md:w-[130px] md:shrink-0 md:flex-col md:border-r">
-        <div className="p-4 font-medium">{storeName}</div>
+        <Link href="/admin" className="block p-4 font-medium hover:text-primary">
+          {storeName}
+        </Link>
         <nav className="flex-1">
+          <AdminNavLink
+            href="/admin"
+            exact
+            icon={<LayoutDashboardIcon className={NAV_ICON_CLASS} />}
+          >
+            Overview
+          </AdminNavLink>
           <AdminNavLink
             href="/admin/products"
             icon={<PackageIcon className={NAV_ICON_CLASS} />}

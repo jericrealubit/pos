@@ -10,13 +10,17 @@ export function AdminNavLink({
   href,
   icon,
   children,
+  exact = false,
 }: {
   href: string
   icon: React.ReactNode
   children: React.ReactNode
+  /** Match this route only, not its descendants — needed for the /admin
+   *  dashboard, whose prefix would otherwise light up on every admin page. */
+  exact?: boolean
 }) {
   const pathname = usePathname()
-  const active = pathname.startsWith(href)
+  const active = exact ? pathname === href : pathname.startsWith(href)
 
   return (
     <Link
