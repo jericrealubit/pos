@@ -2,12 +2,14 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowRightIcon, PrinterIcon } from "lucide-react"
 
-import { getProfile } from "@/lib/dal"
+import { getProfile, hasPremium } from "@/lib/dal"
 import { getSaleWithItems } from "@/lib/dal/sales"
+import { TENDER_LABEL } from "@/lib/receipt"
 import { formatMoney } from "@/lib/money"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { TillNav } from "@/components/sell/till-nav"
+import { EmailReceiptButton } from "@/components/sell/email-receipt-dialog"
 import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
 export default async function SaleDonePage({
@@ -30,7 +32,7 @@ export default async function SaleDonePage({
       <div>
         <h1 className="text-lg font-semibold">Sale complete</h1>
         <p className="text-sm text-muted-foreground">
-          {itemCount} item{itemCount === 1 ? "" : "s"} · {formatMoney(sale.subtotal_cents, currency)} · {time}
+          {itemCount} item{itemCount === 1 ? "" : "s"} · {formatMoney(sale.total_cents, currency)} · {time}
         </p>
       </div>
 
@@ -49,10 +51,33 @@ export default async function SaleDonePage({
             </div>
           </div>
         ))}
+        {sale.discount_cents > 0 && (
+          <div className="flex items-center justify-between p-3 text-sm text-muted-foreground">
+            <span>Subtotal</span>
+            <span>{formatMoney(sale.subtotal_cents, currency)}</span>
+          </div>
+        )}
+        {sale.discount_cents > 0 && (
+          <div className="flex items-center justify-between p-3 text-sm text-primary">
+            <span>Discount</span>
+            <span>− {formatMoney(sale.discount_cents, currency)}</span>
+          </div>
+        )}
         <div className="flex items-center justify-between p-3 text-base font-semibold">
           <span>Total</span>
-          <span>{formatMoney(sale.subtotal_cents, currency)}</span>
+          <span>{formatMoney(sale.total_cents, currency)}</span>
         </div>
+        {sale.status === "PAID" && (
+          <div className="flex items-center justify-between p-3 text-sm text-muted-foreground">
+            <span>Paid by {TENDER_LABEL[sale.tender_type]}</span>
+            {sale.tendered_cents !== null && (
+              <span>
+                Tendered {formatMoney(sale.tendered_cents, currency)} · Change{" "}
+                {formatMoney(sale.tendered_cents - sale.total_cents, currency)}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-4 md:max-w-sm">
@@ -64,6 +89,8 @@ export default async function SaleDonePage({
           <PrinterIcon />
           Print receipt
         </Link>
+
+        <EmailReceiptButton saleId={sale.id} isPremium={hasPremium(profile)} />
 
         <Link href="/sell" className={cn(buttonVariants({ size: "till" }), "mt-2 gap-1.5")}>
           Start next sale

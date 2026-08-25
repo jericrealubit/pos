@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     sale.customers?.name ?? "",
     sale.profiles ? `${sale.profiles.first_name} ${sale.profiles.last_name}`.trim() : "",
     sale.sale_items.reduce((sum, item) => sum + item.quantity, 0),
-    formatMoney(sale.subtotal_cents, currency),
+    formatMoney(sale.total_cents, currency),
   ])
 
   const csv = toCsv(["Sale ID", "Date", "Status", "Customer", "Cashier", "Items", "Total"], rows)

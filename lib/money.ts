@@ -17,3 +17,13 @@ export function formatMoney(cents: number, currency = "USD"): string {
     currency,
   }).format(cents / 100)
 }
+
+/** Short form for tight spaces (chart axis ticks) — "$1.2K" not "$1,200.00". */
+export function formatMoneyCompact(cents: number, currency = "USD"): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(cents / 100)
+}

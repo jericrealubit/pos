@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { PackagePlusIcon } from "lucide-react"
+import { PackagePlusIcon, UploadIcon } from "lucide-react"
 
 import { getProducts, getCategories } from "@/lib/dal/products"
 import { getProfile } from "@/lib/dal"
@@ -19,8 +19,19 @@ export default async function ProductsPage() {
       <div className="flex items-center gap-3">
         <h1 className="text-xl font-semibold">Products</h1>
         <Button
+          variant="outline"
           size="till"
           className="ml-auto gap-1.5"
+          nativeButton={false}
+          render={<Link href="/admin/products/import" />}
+        >
+          <UploadIcon />
+          Import
+          <LinkPendingIndicator />
+        </Button>
+        <Button
+          size="till"
+          className="gap-1.5"
           nativeButton={false}
           render={<Link href="/admin/products/new" />}
         >

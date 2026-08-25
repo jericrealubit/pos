@@ -6,6 +6,12 @@ import type { getProfile } from "@/lib/dal"
 type SaleWithItems = NonNullable<Awaited<ReturnType<typeof getSaleWithItems>>>
 type Profile = NonNullable<Awaited<ReturnType<typeof getProfile>>>
 
+export const TENDER_LABEL: Record<SaleWithItems["tender_type"], string> = {
+  CASH: "Cash",
+  CARD: "Card",
+  EWALLET: "E-wallet",
+}
+
 export type ReceiptData = {
   store: { name: string; address: string | null; phone: string | null; currency: string }
   reference: string
@@ -15,6 +21,10 @@ export type ReceiptData = {
   customerName: string | null
   items: { name: string; size: string | null; quantity: number; unitPriceCents: number }[]
   subtotalCents: number
+  discountCents: number
+  totalCents: number
+  tenderType: SaleWithItems["tender_type"]
+  tenderedCents: number | null
 }
 
 export function buildReceiptData(sale: SaleWithItems, profile: Profile): ReceiptData {
@@ -38,5 +48,9 @@ export function buildReceiptData(sale: SaleWithItems, profile: Profile): Receipt
       unitPriceCents: item.unit_price_cents,
     })),
     subtotalCents: sale.subtotal_cents,
+    discountCents: sale.discount_cents,
+    totalCents: sale.total_cents,
+    tenderType: sale.tender_type,
+    tenderedCents: sale.tendered_cents,
   }
 }

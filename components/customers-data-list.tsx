@@ -51,7 +51,7 @@ export function CustomersDataList({
       header: "Oldest",
       cell: ({ row }) =>
         row.original.oldest_unpaid
-          ? new Date(row.original.oldest_unpaid).toLocaleDateString()
+          ? new Date(row.original.oldest_unpaid).toLocaleDateString("en-US")
           : "—",
     },
   ]

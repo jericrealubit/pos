@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 
 import { getProfile } from "@/lib/dal"
 import { getSaleWithItems } from "@/lib/dal/sales"
-import { buildReceiptData } from "@/lib/receipt"
+import { buildReceiptData, TENDER_LABEL } from "@/lib/receipt"
 import { formatMoney } from "@/lib/money"
 import { ReceiptAutoPrint } from "@/components/receipt-auto-print"
 
@@ -58,10 +58,34 @@ export default async function SaleReceiptPage({
           ))}
         </div>
 
-        <div className="mt-3 flex justify-between text-base font-semibold">
+        {receipt.discountCents > 0 && (
+          <div className="mt-3 flex justify-between text-sm text-neutral-600">
+            <span>Subtotal</span>
+            <span>{formatMoney(receipt.subtotalCents, currency)}</span>
+          </div>
+        )}
+        {receipt.discountCents > 0 && (
+          <div className="flex justify-between text-sm text-neutral-600">
+            <span>Discount</span>
+            <span>− {formatMoney(receipt.discountCents, currency)}</span>
+          </div>
+        )}
+        <div className="mt-1 flex justify-between text-base font-semibold">
           <span>Total</span>
-          <span>{formatMoney(receipt.subtotalCents, currency)}</span>
+          <span>{formatMoney(receipt.totalCents, currency)}</span>
         </div>
+
+        {receipt.status === "PAID" && (
+          <div className="mt-1 flex justify-between text-xs text-neutral-600">
+            <span>Paid by {TENDER_LABEL[receipt.tenderType]}</span>
+            {receipt.tenderedCents !== null && (
+              <span>
+                Tendered {formatMoney(receipt.tenderedCents, currency)} · Change{" "}
+                {formatMoney(receipt.tenderedCents - receipt.totalCents, currency)}
+              </span>
+            )}
+          </div>
+        )}
 
         {receipt.status === "UNPAID" && (
           <div className="mt-2 text-center text-xs text-neutral-600">

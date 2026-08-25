@@ -166,7 +166,9 @@ function InviteRow({ invite }: { invite: PendingInvite }) {
         <div className="truncate font-medium">{invite.email}</div>
         <div className="text-xs text-muted-foreground">
           {invite.role === "ADMIN" ? "Admin" : "Cashier"} · expires{" "}
-          {new Date(invite.expires_at).toLocaleDateString()}
+          {/* Locale pinned (not the browser default) so server and client
+              render identically — see lib/money.ts for the same rationale. */}
+          {new Date(invite.expires_at).toLocaleDateString("en-US")}
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -198,6 +200,7 @@ function InviteRow({ invite }: { invite: PendingInvite }) {
 function InviteForm() {
   const [isPending, startTransition] = useTransition();
   const [createdUrl, setCreatedUrl] = useState<string | null>(null);
+  const [emailed, setEmailed] = useState(false);
   const {
     register,
     handleSubmit,
@@ -211,6 +214,7 @@ function InviteForm() {
 
   function onSubmit(values: StaffInviteInput) {
     setCreatedUrl(null);
+    setEmailed(false);
     startTransition(async () => {
       const result = await staffInviteCreate(values);
       if (!result.ok) {
@@ -221,6 +225,13 @@ function InviteForm() {
         return;
       }
       setCreatedUrl(result.data.joinUrl);
+      setEmailed(result.data.emailed);
+      toast.add({
+        title: result.data.emailed
+          ? `Invitation emailed to ${result.data.email}`
+          : "Invite created",
+        type: "success",
+      });
       reset({ email: "", role: "CASHIER" });
     });
   }
@@ -276,19 +287,26 @@ function InviteForm() {
       </form>
 
       {createdUrl && (
-        <div className="mt-3 flex items-center gap-2 rounded-md border bg-muted/50 p-2 text-xs">
-          <code className="min-w-0 flex-1 truncate">{createdUrl}</code>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              navigator.clipboard.writeText(createdUrl);
-              toast.add({ title: "Invite link copied", type: "success" });
-            }}
-          >
-            Copy
-          </Button>
+        <div className="mt-3 flex flex-col gap-1.5">
+          <p className="text-xs text-muted-foreground">
+            {emailed
+              ? "Emailed to your teammate. You can also share the link directly:"
+              : "Email isn't configured — share this link with your teammate:"}
+          </p>
+          <div className="flex items-center gap-2 rounded-md border bg-muted/50 p-2 text-xs">
+            <code className="min-w-0 flex-1 truncate">{createdUrl}</code>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                navigator.clipboard.writeText(createdUrl);
+                toast.add({ title: "Invite link copied", type: "success" });
+              }}
+            >
+              Copy
+            </Button>
+          </div>
         </div>
       )}
     </div>

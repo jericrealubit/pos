@@ -1,11 +1,13 @@
 import { z } from "zod"
 
-const moneyDollars = z
+// Exported so lib/schemas/product-import.ts can build a CSV row schema with
+// the same money/quantity rules as the single-product form.
+export const moneyDollars = z
   .string()
   .trim()
   .regex(/^\d+(\.\d{1,2})?$/, "Enter a price like 4.20")
 
-const wholeNumber = z
+export const wholeNumber = z
   .string()
   .trim()
   .regex(/^\d{1,6}$/, "Enter a whole number like 5")

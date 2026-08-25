@@ -16,6 +16,8 @@ export default async function SalesPage({ searchParams }: PageProps<"/admin/sale
     id: sale.id,
     status: sale.status,
     subtotal_cents: sale.subtotal_cents,
+    total_cents: sale.total_cents,
+    tender_type: sale.tender_type,
     created_at: sale.created_at,
     customerName: sale.customers?.name ?? "",
     cashierName: sale.profiles
@@ -25,7 +27,7 @@ export default async function SalesPage({ searchParams }: PageProps<"/admin/sale
     itemCount: sale.sale_items.reduce((sum, item) => sum + item.quantity, 0),
   }))
 
-  const totalCents = rows.reduce((sum, row) => sum + row.subtotal_cents, 0)
+  const totalCents = rows.reduce((sum, row) => sum + row.total_cents, 0)
 
   return (
     <div className="flex flex-col gap-4">

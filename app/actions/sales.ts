@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { requireUser, requireStore, hasPremium } from "@/lib/dal"
 import { createSaleSchema, type CreateSaleInput } from "@/lib/schemas/sale"
+import { dollarsToCents } from "@/lib/money"
 import type { ActionResult } from "@/lib/actions/types"
 
 export async function lookupByBarcode(
@@ -61,6 +62,14 @@ export async function createSale(
     }
   }
 
+  const discountCents = parsed.data.discount ? dollarsToCents(parsed.data.discount) : 0
+  // Tender/change is a PAID-only concept; an UNPAID (pay-later) sale hasn't
+  // been paid at all, so tendered is dropped regardless of what was sent.
+  const tenderedCents =
+    parsed.data.status === "PAID" && parsed.data.tenderType === "CASH" && parsed.data.tendered
+      ? dollarsToCents(parsed.data.tendered)
+      : null
+
   const supabase = await createClient()
   const { data, error } = await supabase
     .rpc("create_sale", {
@@ -69,11 +78,24 @@ export async function createSale(
         quantity: line.quantity,
       })),
       p_status: parsed.data.status,
+      p_discount_cents: discountCents,
+      p_tender_type: parsed.data.tenderType,
+      ...(tenderedCents !== null ? { p_tendered_cents: tenderedCents } : {}),
       ...(parsed.data.customerId ? { p_customer_id: parsed.data.customerId } : {}),
     })
     .single()
 
   if (error) {
+    // These two are user-correctable input mistakes the RPC raises in
+    // plain English (unlike other DB errors) — surface them verbatim
+    // rather than the generic fallback, which would wrongly suggest
+    // retrying helps.
+    if (
+      error.message.includes("Discount cannot exceed") ||
+      error.message.includes("Amount tendered is less than")
+    ) {
+      return { ok: false, formError: error.message }
+    }
     return { ok: false, formError: "Could not complete the sale. Try again." }
   }
 

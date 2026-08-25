@@ -1,6 +1,6 @@
 "use client"
 
-import { MinusIcon, PlusIcon, ScanBarcodeIcon } from "lucide-react"
+import { MinusIcon, PlusIcon, ScanBarcodeIcon, XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { formatMoney } from "@/lib/money"
@@ -12,15 +12,26 @@ export function CartLines({
   lines,
   currency,
   editable,
+  subtitle,
   justAddedProductId,
   onQuantityChange,
+  onRemove,
 }: {
   lines: CartLine[]
   currency: string
   editable: boolean
+  /** "barcode" helps confirm what was just scanned mid-scan; the summary
+   *  screen wants price/qty visible instead. Defaults preserve each
+   *  screen's existing behavior. */
+  subtitle?: "priceAndQty" | "barcode"
   justAddedProductId?: string | null
   onQuantityChange?: (productId: string, quantity: number) => void
+  /** One-tap full removal, distinct from stepping the quantity to 0.
+   *  Only wired on the cart summary screen — omitted mid-scan so a stray
+   *  tap can't wipe a line while the cashier is still scanning. */
+  onRemove?: (productId: string) => void
 }) {
+  const showBarcode = subtitle ? subtitle === "barcode" : editable
   if (lines.length === 0) {
     return <EmptyState icon={ScanBarcodeIcon} title="Nothing scanned yet" />
   }
@@ -41,7 +52,7 @@ export function CartLines({
               {line.size ? ` · ${line.size}` : ""}
             </div>
             <div className="truncate text-xs text-muted-foreground">
-              {editable
+              {showBarcode
                 ? line.barcode
                 : `${line.quantity} × ${formatMoney(line.priceCents, currency)}`}
             </div>
@@ -74,6 +85,19 @@ export function CartLines({
           <div className="text-right text-sm font-medium tabular-nums">
             {formatMoney(line.priceCents * line.quantity, currency)}
           </div>
+
+          {onRemove && (
+            <Button
+              type="button"
+              size="icon-till"
+              variant="ghost"
+              aria-label={`Remove ${line.name}`}
+              className="text-muted-foreground"
+              onClick={() => onRemove(line.productId)}
+            >
+              <XIcon />
+            </Button>
+          )}
         </div>
       ))}
     </div>

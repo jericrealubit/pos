@@ -276,28 +276,40 @@ export type Database = {
           cashier_id: string
           created_at: string
           customer_id: string | null
+          discount_cents: number
           id: string
           status: Database["counter"]["Enums"]["sale_status"]
           store_id: string
           subtotal_cents: number
+          tender_type: Database["counter"]["Enums"]["tender_type"]
+          tendered_cents: number | null
+          total_cents: number
         }
         Insert: {
           cashier_id: string
           created_at?: string
           customer_id?: string | null
+          discount_cents?: number
           id?: string
           status: Database["counter"]["Enums"]["sale_status"]
           store_id: string
           subtotal_cents: number
+          tender_type?: Database["counter"]["Enums"]["tender_type"]
+          tendered_cents?: number | null
+          total_cents?: never
         }
         Update: {
           cashier_id?: string
           created_at?: string
           customer_id?: string | null
+          discount_cents?: number
           id?: string
           status?: Database["counter"]["Enums"]["sale_status"]
           store_id?: string
           subtotal_cents?: number
+          tender_type?: Database["counter"]["Enums"]["tender_type"]
+          tendered_cents?: number | null
+          total_cents?: never
         }
         Relationships: [
           {
@@ -479,7 +491,10 @@ export type Database = {
         Args: {
           items: Json
           p_customer_id?: string
+          p_discount_cents?: number
           p_status?: Database["counter"]["Enums"]["sale_status"]
+          p_tender_type?: Database["counter"]["Enums"]["tender_type"]
+          p_tendered_cents?: number
         }
         Returns: {
           sale_id: string
@@ -517,6 +532,40 @@ export type Database = {
       revoke_staff_invite: {
         Args: { p_invite_id: string }
         Returns: undefined
+      }
+      product_velocity: {
+        Args: { p_from: string | null; p_to: string | null }
+        Returns: {
+          product_id: string
+          name: string
+          quantity_sold: number
+          revenue_cents: number
+          stock_quantity: number
+        }[]
+      }
+      sales_by_day_of_week: {
+        Args: { p_from: string | null; p_to: string | null }
+        Returns: {
+          dow: number
+          total_cents: number
+          sale_count: number
+        }[]
+      }
+      sales_by_hour: {
+        Args: { p_from: string | null; p_to: string | null }
+        Returns: {
+          hour: number
+          total_cents: number
+          sale_count: number
+        }[]
+      }
+      sales_by_tender: {
+        Args: { p_from: string | null; p_to: string | null }
+        Returns: {
+          tender_type: Database["counter"]["Enums"]["tender_type"]
+          total_cents: number
+          sale_count: number
+        }[]
       }
       sales_revenue_by_day: {
         Args: { p_from: string | null; p_to: string | null }
@@ -598,6 +647,7 @@ export type Database = {
     Enums: {
       sale_status: "PAID" | "UNPAID" | "SETTLED"
       store_plan: "TRIAL" | "PAID" | "FREE"
+      tender_type: "CASH" | "CARD" | "EWALLET"
       user_role: "OWNER" | "ADMIN" | "CASHIER"
     }
     CompositeTypes: {
@@ -728,6 +778,7 @@ export const Constants = {
     Enums: {
       sale_status: ["PAID", "UNPAID", "SETTLED"],
       store_plan: ["TRIAL", "PAID", "FREE"],
+      tender_type: ["CASH", "CARD", "EWALLET"],
       user_role: ["OWNER", "ADMIN", "CASHIER"],
     },
   },

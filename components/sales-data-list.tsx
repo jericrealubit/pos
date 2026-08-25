@@ -16,6 +16,8 @@ export type SaleRow = {
   id: string
   status: "PAID" | "UNPAID" | "SETTLED"
   subtotal_cents: number
+  total_cents: number
+  tender_type: "CASH" | "CARD" | "EWALLET"
   created_at: string
   customerName: string
   cashierName: string
@@ -33,6 +35,12 @@ const STATUS_VARIANT: Record<SaleRow["status"], "default" | "secondary" | "destr
   PAID: "default",
   UNPAID: "destructive",
   SETTLED: "secondary",
+}
+
+const TENDER_LABEL: Record<SaleRow["tender_type"], string> = {
+  CASH: "Cash",
+  CARD: "Card",
+  EWALLET: "E-wallet",
 }
 
 export function SalesDataList({
@@ -61,7 +69,7 @@ export function SalesDataList({
       id: "created_at",
       accessorFn: (s) => new Date(s.created_at).getTime(),
       header: "Date",
-      cell: ({ row }) => new Date(row.original.created_at).toLocaleString(),
+      cell: ({ row }) => new Date(row.original.created_at).toLocaleString("en-US"),
     },
     {
       id: "customerName",
@@ -92,10 +100,21 @@ export function SalesDataList({
       cell: ({ row }) => row.original.itemCount,
     },
     {
-      id: "subtotal_cents",
-      accessorFn: (s) => s.subtotal_cents,
+      id: "tender_type",
+      accessorFn: (s) => s.tender_type,
+      header: "Tender",
+      cell: ({ row }) =>
+        row.original.status === "PAID" ? (
+          <Badge variant="outline">{TENDER_LABEL[row.original.tender_type]}</Badge>
+        ) : (
+          "—"
+        ),
+    },
+    {
+      id: "total_cents",
+      accessorFn: (s) => s.total_cents,
       header: "Total",
-      cell: ({ row }) => formatMoney(row.original.subtotal_cents, currency),
+      cell: ({ row }) => formatMoney(row.original.total_cents, currency),
     },
   ]
 
@@ -146,9 +165,9 @@ export function SalesDataList({
               <Badge variant={STATUS_VARIANT[s.status]}>{STATUS_LABEL[s.status]}</Badge>
             </div>
             <div className="flex items-center justify-between text-muted-foreground">
-              <span>{new Date(s.created_at).toLocaleString()}</span>
+              <span>{new Date(s.created_at).toLocaleString("en-US")}</span>
               <span className="font-medium text-foreground tabular-nums">
-                {formatMoney(s.subtotal_cents, currency)}
+                {formatMoney(s.total_cents, currency)}
               </span>
             </div>
           </button>

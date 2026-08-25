@@ -21,6 +21,7 @@ import {
   type CartLine,
   type CartState,
 } from "@/lib/pos/cart-reducer"
+import { addHeldCart, loadHeldCarts, removeHeldCart, type HeldCart } from "@/lib/pos/held-carts"
 import { playSuccessBeep } from "@/lib/pos/beep"
 import { toast } from "@/components/ui/toast"
 import { Spinner } from "@/components/ui/spinner"
@@ -54,6 +55,11 @@ type SellContextValue = {
   canManageProducts: boolean
   /** Premium: the pay-later book is unlocked. False on the Free tier. */
   canUsePayLater: boolean
+  heldCarts: HeldCart[]
+  /** false if already at the held-cart cap — nothing was held. */
+  holdCurrentCart: () => boolean
+  resumeHeldCart: (id: string) => void
+  discardHeldCart: (id: string) => void
 }
 
 const SellContext = createContext<SellContextValue | null>(null)
@@ -80,6 +86,7 @@ export function SellProvider({
   const [justAddedProductId, setJustAddedProductId] = useState<string | null>(null)
   const [unknownBarcode, setUnknownBarcode] = useState<string | null>(null)
   const [scanPending, startScanTransition] = useTransition()
+  const [heldCarts, setHeldCarts] = useState<HeldCart[]>([])
   const pathname = usePathname()
 
   // Hydrate from localStorage after mount, not in a lazy initializer —
@@ -104,6 +111,7 @@ export function SellProvider({
     // available during SSR) — the correct use of an effect, not the
     // cascading-render case this rule is meant to catch.
     // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHeldCarts(loadHeldCarts())
     setHydrated(true)
   }, [])
 
@@ -154,6 +162,30 @@ export function SellProvider({
     })
   }, [])
 
+  const holdCurrentCart = useCallback((): boolean => {
+    const held = addHeldCart(state)
+    if (!held) return false
+    setHeldCarts((prev) => [held, ...prev])
+    dispatch({ type: "CLEAR" })
+    return true
+  }, [state])
+
+  const resumeHeldCart = useCallback(
+    (id: string) => {
+      const held = heldCarts.find((c) => c.id === id)
+      if (!held) return
+      dispatch({ type: "HYDRATE", state: held.state })
+      removeHeldCart(id)
+      setHeldCarts((prev) => prev.filter((c) => c.id !== id))
+    },
+    [heldCarts]
+  )
+
+  const discardHeldCart = useCallback((id: string) => {
+    removeHeldCart(id)
+    setHeldCarts((prev) => prev.filter((c) => c.id !== id))
+  }, [])
+
   const value = useMemo<SellContextValue>(
     () => ({
       lines: state.lines,
@@ -170,8 +202,24 @@ export function SellProvider({
       currency,
       canManageProducts: role === "OWNER" || role === "ADMIN",
       canUsePayLater,
+      heldCarts,
+      holdCurrentCart,
+      resumeHeldCart,
+      discardHeldCart,
     }),
-    [state.lines, onBarcode, scanPending, justAddedProductId, role, currency, canUsePayLater]
+    [
+      state,
+      onBarcode,
+      scanPending,
+      justAddedProductId,
+      role,
+      currency,
+      canUsePayLater,
+      heldCarts,
+      holdCurrentCart,
+      resumeHeldCart,
+      discardHeldCart,
+    ]
   )
 
   const scannerEnabled = SCANNER_ROUTES.includes(pathname)

@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { requireAdmin, hasPremium } from "@/lib/dal"
 import { staffInviteSchema, staffRoleSchema, type StaffInviteInput } from "@/lib/schemas/staff"
+import { sendEmail } from "@/lib/email/send"
+import { staffInviteEmail } from "@/lib/email/templates/staff-invite"
 import type { ActionResult } from "@/lib/actions/types"
 
 /**
@@ -18,7 +20,9 @@ import type { ActionResult } from "@/lib/actions/types"
  */
 export async function staffInviteCreate(
   input: StaffInviteInput
-): Promise<ActionResult<{ joinUrl: string; expiresAt: string }>> {
+): Promise<
+  ActionResult<{ joinUrl: string; expiresAt: string; emailed: boolean; email: string }>
+> {
   const profile = await requireAdmin()
   if (!hasPremium(profile)) {
     return { ok: false, code: "UPGRADE", formError: "Staff accounts are a Premium feature." }
@@ -40,8 +44,27 @@ export async function staffInviteCreate(
   const origin = (await headers()).get("origin")
   const joinUrl = `${origin ?? ""}/join/${data.token}`
 
+  // Best-effort: a failed send must never fail invite creation. The UI keeps
+  // the copy-link path as the fallback either way.
+  let emailed = false
+  try {
+    const storeName = profile.stores?.name as string | undefined
+    const inviterName = [profile.first_name, profile.last_name].filter(Boolean).join(" ")
+    const { subject, html, text } = staffInviteEmail({
+      storeName: storeName ?? "your store",
+      inviterName: inviterName || "A teammate",
+      role: parsed.data.role,
+      joinUrl,
+      expiresAt: data.expires_at,
+    })
+    const result = await sendEmail({ to: parsed.data.email, subject, html, text })
+    emailed = result.ok
+  } catch {
+    emailed = false
+  }
+
   revalidatePath("/admin/team")
-  return { ok: true, data: { joinUrl, expiresAt: data.expires_at } }
+  return { ok: true, data: { joinUrl, expiresAt: data.expires_at, emailed, email: parsed.data.email } }
 }
 
 export async function staffInviteRevoke(inviteId: string): Promise<ActionResult> {

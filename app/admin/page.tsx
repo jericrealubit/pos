@@ -227,7 +227,7 @@ export default async function AdminDashboard() {
                         })}
                       </span>
                       <span className="font-medium tabular-nums">
-                        {formatMoney(s.subtotal_cents, currency)}
+                        {formatMoney(s.total_cents, currency)}
                       </span>
                     </span>
                   </Link>

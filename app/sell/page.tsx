@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/money"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { TillNav } from "@/components/sell/till-nav"
+import { HeldSalesEntry } from "@/components/sell/held-sales-entry"
 import { LinkPendingIndicator } from "@/components/link-pending-indicator"
 
 export default async function SellPage() {
@@ -46,6 +47,8 @@ export default async function SellPage() {
           A plugged-in USB or Bluetooth scanner types into the app like a keyboard — it works on
           this screen too, without pressing anything first.
         </p>
+
+        <HeldSalesEntry />
       </div>
 
       {recentSales.length > 0 && (
@@ -75,7 +78,7 @@ export default async function SellPage() {
                     </div>
                   </div>
                   <div className="font-medium tabular-nums">
-                    {formatMoney(sale.subtotal_cents, currency)}
+                    {formatMoney(sale.total_cents, currency)}
                   </div>
                   <LinkPendingIndicator className="size-3.5 shrink-0" />
                 </Link>

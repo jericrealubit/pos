@@ -71,7 +71,7 @@ function BillingCell({ store }: { store: SuperAdminStoreRow }) {
         return
       }
       toast.add({
-        title: `${store.store_name} paid until ${new Date(result.data.paidUntil).toLocaleDateString()}`,
+        title: `${store.store_name} paid until ${new Date(result.data.paidUntil).toLocaleDateString("en-US")}`,
         type: "success",
       })
     })
@@ -124,7 +124,7 @@ export function StoresDataList({ stores }: { stores: SuperAdminStoreRow[] }) {
       id: "created_at",
       accessorFn: (s) => s.created_at,
       header: "Created",
-      cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
+      cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString("en-US"),
     },
     {
       id: "billing",

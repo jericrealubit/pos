@@ -4,7 +4,7 @@ import { ChevronLeftIcon, PrinterIcon } from "lucide-react"
 
 import { getProfile } from "@/lib/dal"
 import { getSaleWithItems } from "@/lib/dal/sales"
-import { buildReceiptData } from "@/lib/receipt"
+import { buildReceiptData, TENDER_LABEL } from "@/lib/receipt"
 import { formatMoney } from "@/lib/money"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
@@ -38,6 +38,9 @@ export default async function SaleRecordPage({ params }: PageProps<"/admin/sales
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-xl font-semibold">Receipt {receipt.reference}</h1>
         <Badge variant={STATUS_VARIANT[receipt.status]}>{receipt.status}</Badge>
+        {receipt.status === "PAID" && (
+          <Badge variant="outline">{TENDER_LABEL[receipt.tenderType]}</Badge>
+        )}
         <span className="text-sm text-muted-foreground">
           {new Date(receipt.createdAt).toLocaleString()}
         </span>
@@ -63,10 +66,31 @@ export default async function SaleRecordPage({ params }: PageProps<"/admin/sales
             </div>
           </div>
         ))}
+        {receipt.discountCents > 0 && (
+          <div className="flex items-center justify-between p-3 text-sm text-muted-foreground">
+            <span>Subtotal</span>
+            <span>{formatMoney(receipt.subtotalCents, currency)}</span>
+          </div>
+        )}
+        {receipt.discountCents > 0 && (
+          <div className="flex items-center justify-between p-3 text-sm text-primary">
+            <span>Discount</span>
+            <span>− {formatMoney(receipt.discountCents, currency)}</span>
+          </div>
+        )}
         <div className="flex items-center justify-between p-3 text-base font-semibold">
           <span>Total</span>
-          <span>{formatMoney(receipt.subtotalCents, currency)}</span>
+          <span>{formatMoney(receipt.totalCents, currency)}</span>
         </div>
+        {receipt.status === "PAID" && receipt.tenderedCents !== null && (
+          <div className="flex items-center justify-between p-3 text-sm text-muted-foreground">
+            <span>Tendered</span>
+            <span>
+              {formatMoney(receipt.tenderedCents, currency)} · Change{" "}
+              {formatMoney(receipt.tenderedCents - receipt.totalCents, currency)}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-2 md:max-w-sm">

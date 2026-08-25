@@ -6,7 +6,7 @@ export async function getRecentSales(limit = 5) {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("sales")
-    .select("id, status, subtotal_cents, created_at, sale_items(quantity)")
+    .select("id, status, subtotal_cents, total_cents, created_at, sale_items(quantity)")
     .order("created_at", { ascending: false })
     .limit(limit)
   if (error) throw error
@@ -18,7 +18,7 @@ export async function getSales({ from, to }: { from: string | null; to: string |
   let query = supabase
     .from("sales")
     .select(
-      "id, status, subtotal_cents, created_at, customers(name), profiles(first_name, last_name), sale_items(quantity)"
+      "id, status, subtotal_cents, total_cents, tender_type, created_at, customers(name), profiles(first_name, last_name), sale_items(quantity)"
     )
     .order("created_at", { ascending: false })
   if (from) query = query.gte("created_at", from)
@@ -36,10 +36,13 @@ export async function getSales({ from, to }: { from: string | null; to: string |
  */
 export function summarizeSales(sales: Awaited<ReturnType<typeof getSales>>) {
   const saleCount = sales.length
-  const totalCents = sales.reduce((sum, s) => sum + s.subtotal_cents, 0)
+  // total_cents (post-discount), not subtotal_cents — a discounted sale
+  // shouldn't inflate revenue, and "owed" on the book means what's
+  // actually still due, not the pre-discount price.
+  const totalCents = sales.reduce((sum, s) => sum + s.total_cents, 0)
   const unpaidCents = sales
     .filter((s) => s.status === "UNPAID")
-    .reduce((sum, s) => sum + s.subtotal_cents, 0)
+    .reduce((sum, s) => sum + s.total_cents, 0)
   const avgCents = saleCount > 0 ? Math.round(totalCents / saleCount) : 0
   return { totalCents, saleCount, avgCents, unpaidCents }
 }
