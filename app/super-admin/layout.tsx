@@ -10,7 +10,7 @@ export default async function SuperAdminLayout({ children }: LayoutProps<"/super
         <div className="font-medium">Super Admin</div>
         <SignOutButton />
       </header>
-      <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
+      <main id="main-content" className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
     </div>
   )
 }

@@ -22,7 +22,7 @@ export default async function SellLayout({ children }: LayoutProps<"/sell">) {
         <ThemeSwitcher />
       </div>
       <BillingBanner />
-      <div className="mx-auto min-h-full w-full max-w-md md:max-w-3xl">{children}</div>
+      <div id="main-content" className="mx-auto min-h-full w-full max-w-md md:max-w-3xl">{children}</div>
     </SellProvider>
   )
 }

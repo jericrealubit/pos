@@ -23,6 +23,7 @@ export default async function SettingsPage() {
           phone: store.phone,
           low_stock_threshold: store.low_stock_threshold,
           currency: store.currency,
+          receipt_footer_message: store.receipt_footer_message,
           hasSales: (count ?? 0) > 0,
         }}
       />

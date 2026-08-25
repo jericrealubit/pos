@@ -18,6 +18,8 @@ import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { LinkPendingIndicator } from "@/components/link-pending-indicator";
 import { BillingBanner } from "@/components/billing-banner";
+import { AdminCommandPalette } from "@/components/admin-command-palette";
+import { AdminCommandPaletteTrigger } from "@/components/admin-command-palette-trigger";
 
 const NAV_ICON_CLASS = "size-4 shrink-0 group-aria-[current=page]:text-primary";
 
@@ -31,9 +33,12 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       <BillingBanner surface="admin" />
       <div className="flex flex-1">
       <aside className="hidden md:flex md:w-[130px] md:shrink-0 md:flex-col md:border-r">
-        <Link href="/admin" className="block p-4 font-medium hover:text-primary">
+        <Link href="/admin" className="block p-4 pb-2 font-medium hover:text-primary">
           {storeName}
         </Link>
+        <div className="px-4 pb-2">
+          <AdminCommandPaletteTrigger />
+        </div>
         <nav className="flex-1">
           <AdminNavLink
             href="/admin"
@@ -104,9 +109,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       </aside>
         <div className="flex min-w-0 flex-1 flex-col">
           <AdminMobileNav storeName={storeName} isPremium={isPremium} />
-          <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
+          <main id="main-content" className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
         </div>
       </div>
+      <AdminCommandPalette isPremium={isPremium} />
     </div>
   );
 }

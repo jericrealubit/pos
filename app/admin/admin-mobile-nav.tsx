@@ -26,6 +26,7 @@ import { AdminNavLink } from "@/app/admin/admin-nav-link"
 import { SignOutButton } from "@/components/sign-out-button"
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { LinkPendingIndicator } from "@/components/link-pending-indicator"
+import { AdminCommandPaletteTrigger } from "@/components/admin-command-palette-trigger"
 
 const NAV_ICON_CLASS = "size-4 shrink-0 group-aria-[current=page]:text-primary"
 
@@ -54,6 +55,9 @@ export function AdminMobileNav({
           <SheetHeader>
             <SheetTitle>{storeName}</SheetTitle>
           </SheetHeader>
+          <div className="px-4 pb-2" onClick={() => setOpen(false)}>
+            <AdminCommandPaletteTrigger />
+          </div>
           <nav onClick={() => setOpen(false)}>
             <AdminNavLink href="/admin" exact icon={<LayoutDashboardIcon className={NAV_ICON_CLASS} />}>
               Overview

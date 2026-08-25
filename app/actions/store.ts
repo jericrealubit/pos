@@ -22,11 +22,13 @@ export async function storeUpdate(input: StoreSettingsValues): Promise<ActionRes
     phone: string | null
     low_stock_threshold: number
     currency?: string
+    receipt_footer_message: string | null
   } = {
     name: parsed.data.name,
     address: parsed.data.address || null,
     phone: parsed.data.phone || null,
     low_stock_threshold: Number(parsed.data.lowStockThreshold),
+    receipt_footer_message: parsed.data.receiptFooterMessage || null,
   }
 
   // Prices are stored as integer minor units with no currency attached,

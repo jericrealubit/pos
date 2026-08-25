@@ -1,5 +1,6 @@
 "use client"
 
+import { ViewTransition } from "react"
 import { MinusIcon, PlusIcon, ScanBarcodeIcon, XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -39,66 +40,72 @@ export function CartLines({
   return (
     <div className="divide-y rounded-lg border">
       {lines.map((line) => (
-        <div
+        <ViewTransition
           key={line.productId}
-          className={cn(
-            "flex items-center gap-3 p-3 transition-colors",
-            justAddedProductId === line.productId && "bg-primary/10"
-          )}
+          name={`cart-line-${line.productId}`}
+          enter="cart-line-enter"
+          exit="cart-line-exit"
         >
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium">
-              {line.name}
-              {line.size ? ` · ${line.size}` : ""}
+          <div
+            className={cn(
+              "flex items-center gap-3 p-3 transition-colors",
+              justAddedProductId === line.productId && "bg-primary/10"
+            )}
+          >
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium">
+                {line.name}
+                {line.size ? ` · ${line.size}` : ""}
+              </div>
+              <div className="truncate text-xs text-muted-foreground">
+                {showBarcode
+                  ? line.barcode
+                  : `${line.quantity} × ${formatMoney(line.priceCents, currency)}`}
+              </div>
             </div>
-            <div className="truncate text-xs text-muted-foreground">
-              {showBarcode
-                ? line.barcode
-                : `${line.quantity} × ${formatMoney(line.priceCents, currency)}`}
-            </div>
-          </div>
 
-          {editable && onQuantityChange && (
-            <div className="flex items-center gap-2">
+            {editable && onQuantityChange && (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="icon-till"
+                  variant="outline"
+                  aria-label={line.quantity === 1 ? "Remove item" : "Decrease quantity"}
+                  onClick={() => onQuantityChange(line.productId, line.quantity - 1)}
+                >
+                  <MinusIcon />
+                </Button>
+                <span className="w-5 text-center text-sm tabular-nums">{line.quantity}</span>
+                <Button
+                  type="button"
+                  size="icon-till"
+                  variant="outline"
+                  aria-label="Increase quantity"
+                  onClick={() => onQuantityChange(line.productId, line.quantity + 1)}
+                >
+                  <PlusIcon />
+                </Button>
+              </div>
+            )}
+
+            <div className="text-right text-sm font-medium tabular-nums">
+              {formatMoney(line.priceCents * line.quantity, currency)}
+            </div>
+
+            {onRemove && (
               <Button
                 type="button"
                 size="icon-till"
-                variant="outline"
-                aria-label={line.quantity === 1 ? "Remove item" : "Decrease quantity"}
-                onClick={() => onQuantityChange(line.productId, line.quantity - 1)}
+                variant="ghost"
+                aria-label={`Remove ${line.name}`}
+                className="text-muted-foreground"
+                onClick={() => onRemove(line.productId)}
               >
-                <MinusIcon />
+                <XIcon />
               </Button>
-              <span className="w-5 text-center text-sm tabular-nums">{line.quantity}</span>
-              <Button
-                type="button"
-                size="icon-till"
-                variant="outline"
-                aria-label="Increase quantity"
-                onClick={() => onQuantityChange(line.productId, line.quantity + 1)}
-              >
-                <PlusIcon />
-              </Button>
-            </div>
-          )}
-
-          <div className="text-right text-sm font-medium tabular-nums">
-            {formatMoney(line.priceCents * line.quantity, currency)}
+            )}
           </div>
-
-          {onRemove && (
-            <Button
-              type="button"
-              size="icon-till"
-              variant="ghost"
-              aria-label={`Remove ${line.name}`}
-              className="text-muted-foreground"
-              onClick={() => onRemove(line.productId)}
-            >
-              <XIcon />
-            </Button>
-          )}
-        </div>
+        </ViewTransition>
       ))}
     </div>
   )

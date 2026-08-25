@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { TrendingUpIcon, TrophyIcon, CalendarClockIcon } from "lucide-react"
 
 import { requirePremiumAdmin, getProfile } from "@/lib/dal"
 import { getSales, summarizeSales } from "@/lib/dal/sales"
@@ -18,6 +19,7 @@ import { TenderBreakdown } from "@/components/reports/tender-breakdown"
 import { BookAging } from "@/components/reports/book-aging"
 import { InventoryVelocityList } from "@/components/reports/inventory-velocity-list"
 import { buttonVariants } from "@/components/ui/button"
+import { EmptyState } from "@/components/empty-state"
 import { cn } from "@/lib/utils"
 
 export default async function ReportsPage({ searchParams }: PageProps<"/admin/reports">) {
@@ -82,7 +84,11 @@ export default async function ReportsPage({ searchParams }: PageProps<"/admin/re
           </Link>
         </div>
         {revenueByDay.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">No sales in this period.</p>
+          <EmptyState
+            icon={TrendingUpIcon}
+            title="No sales in this period"
+            className="mt-2"
+          />
         ) : (
           <div className="mt-2">
             <RevenueChart data={revenueByDay} currency={currency} />
@@ -93,7 +99,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/admin/re
       <div>
         <h2 className="text-sm font-medium">Top products</h2>
         {topProducts.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">No sales in this period.</p>
+          <EmptyState icon={TrophyIcon} title="No sales in this period" className="mt-2" />
         ) : (
           <div className="mt-2">
             <TopProductsChart data={topProducts} currency={currency} />
@@ -104,7 +110,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/admin/re
       <div>
         <h2 className="text-sm font-medium">Sales patterns</h2>
         {sales.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">No sales in this period.</p>
+          <EmptyState icon={CalendarClockIcon} title="No sales in this period" className="mt-2" />
         ) : (
           <div className="mt-2">
             <SalesPatternsChart byHour={byHour} byDayOfWeek={byDayOfWeek} currency={currency} />

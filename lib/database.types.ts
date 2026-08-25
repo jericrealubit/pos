@@ -356,6 +356,7 @@ export type Database = {
           paid_until: string | null
           phone: string | null
           plan: Database["counter"]["Enums"]["store_plan"]
+          receipt_footer_message: string | null
         }
         Insert: {
           address?: string | null
@@ -370,6 +371,7 @@ export type Database = {
           paid_until?: string | null
           phone?: string | null
           plan?: Database["counter"]["Enums"]["store_plan"]
+          receipt_footer_message?: string | null
         }
         Update: {
           address?: string | null
@@ -384,6 +386,7 @@ export type Database = {
           paid_until?: string | null
           phone?: string | null
           plan?: Database["counter"]["Enums"]["store_plan"]
+          receipt_footer_message?: string | null
         }
         Relationships: []
       }

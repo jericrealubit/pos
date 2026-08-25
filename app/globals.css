@@ -273,3 +273,68 @@ html {
     margin: 0.5cm;
   }
 }
+
+/* Cart line add/remove (components/sell/cart-lines.tsx) — restrained fade
+   + vertical slide, activated only when the row's ViewTransition enters or
+   exits (see enter="cart-line-enter" / exit="cart-line-exit"). Persisting
+   rows reflow via the browser's own default cross-fade, left unset here. */
+::view-transition-old(.cart-line-exit) {
+  animation:
+    180ms ease-in both cart-line-fade-out,
+    180ms ease-in both cart-line-slide-out;
+}
+::view-transition-new(.cart-line-enter) {
+  animation:
+    220ms ease-out both cart-line-fade-in,
+    220ms ease-out both cart-line-slide-in;
+}
+@keyframes cart-line-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes cart-line-slide-out {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 -6px;
+  }
+}
+@keyframes cart-line-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes cart-line-slide-in {
+  from {
+    translate: 0 6px;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+/* The dev-signature badge's flame/smoke (components/site-footer.tsx) is a
+   deliberate always-on exception — a ~16px decorative mark, not motion in
+   the reading path — so it's excluded here rather than gated. */
+@media (prefers-reduced-motion: reduce) {
+  *:not(.animate-flame):not(.animate-smoke-1):not(.animate-smoke-2):not(.animate-smoke-3) {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0.01ms !important;
+  }
+}

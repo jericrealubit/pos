@@ -23,6 +23,7 @@ import {
 } from "@/lib/pos/cart-reducer"
 import { addHeldCart, loadHeldCarts, removeHeldCart, type HeldCart } from "@/lib/pos/held-carts"
 import { playSuccessBeep } from "@/lib/pos/beep"
+import { vibrateSuccess, vibrateError } from "@/lib/pos/haptics"
 import { toast } from "@/components/ui/toast"
 import { Spinner } from "@/components/ui/spinner"
 import { HardwareScannerInput } from "@/components/sell/hardware-scanner-input"
@@ -86,7 +87,9 @@ export function SellProvider({
   const [justAddedProductId, setJustAddedProductId] = useState<string | null>(null)
   const [unknownBarcode, setUnknownBarcode] = useState<string | null>(null)
   const [scanPending, startScanTransition] = useTransition()
+  const [, startCartTransition] = useTransition()
   const [heldCarts, setHeldCarts] = useState<HeldCart[]>([])
+  const [announcement, setAnnouncement] = useState("")
   const pathname = usePathname()
 
   // Hydrate from localStorage after mount, not in a lazy initializer —
@@ -136,10 +139,12 @@ export function SellProvider({
       const result = await lookupByBarcode(code)
       if (!result.ok) {
         toast.add({ title: result.formError ?? "Could not look up that barcode.", type: "error" })
+        vibrateError()
         return
       }
       if (!result.data) {
         setUnknownBarcode(code)
+        vibrateError()
         return
       }
 
@@ -155,6 +160,8 @@ export function SellProvider({
         },
       })
       playSuccessBeep()
+      vibrateSuccess()
+      setAnnouncement(`${product.name} added`)
       setJustAddedProductId(product.id)
       window.setTimeout(() => {
         setJustAddedProductId((current) => (current === product.id ? null : current))
@@ -192,8 +199,9 @@ export function SellProvider({
       totalCents: cartTotalCents(state.lines),
       itemCount: cartItemCount(state.lines),
       setQuantity: (productId, quantity) =>
-        dispatch({ type: "SET_QUANTITY", productId, quantity }),
-      removeLine: (productId) => dispatch({ type: "REMOVE_LINE", productId }),
+        startCartTransition(() => dispatch({ type: "SET_QUANTITY", productId, quantity })),
+      removeLine: (productId) =>
+        startCartTransition(() => dispatch({ type: "REMOVE_LINE", productId })),
       clear: () => dispatch({ type: "CLEAR" }),
       onBarcode,
       scanPending,
@@ -219,6 +227,7 @@ export function SellProvider({
       holdCurrentCart,
       resumeHeldCart,
       discardHeldCart,
+      startCartTransition,
     ]
   )
 
@@ -227,6 +236,9 @@ export function SellProvider({
   return (
     <SellContext.Provider value={value}>
       {children}
+      <div role="status" aria-live="polite" className="sr-only">
+        {announcement}
+      </div>
       {scanPending && (
         <div className="fixed top-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border bg-popover px-3 py-1 text-xs text-muted-foreground shadow-sm">
           <Spinner className="size-3.5" /> Looking up…

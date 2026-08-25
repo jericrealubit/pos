@@ -12,17 +12,37 @@ const LINE = 16
 const INK = rgb(0.07, 0.09, 0.15)
 const MUTED = rgb(0.42, 0.45, 0.5)
 
+// The footer is store-configurable free text (up to 200 chars), unlike the
+// rest of the receipt's fixed-width labels — wrap it so a long custom
+// message doesn't run off the edge of the (narrow, 320pt) receipt page.
+function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
+  const words = text.split(/\s+/).filter(Boolean)
+  const lines: string[] = []
+  let current = ""
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word
+    if (current && font.widthOfTextAtSize(candidate, size) > maxWidth) {
+      lines.push(current)
+      current = word
+    } else {
+      current = candidate
+    }
+  }
+  if (current) lines.push(current)
+  return lines.length ? lines : [text]
+}
+
 // Rough line-count estimate to size the page up front — pdf-lib pages are
 // fixed-height, so we compute this before drawing rather than growing the
 // page as we go.
-function estimateLines(receipt: ReceiptData): number {
+function estimateLines(receipt: ReceiptData, footerLineCount: number): number {
   let lines = 6 // store name, address?, phone?, receipt ref/date, customer/cashier, divider
   lines += receipt.items.length * 2
   lines += 2 // divider + subtotal-or-total
   if (receipt.discountCents > 0) lines += 2 // subtotal row + discount row (total row counted above)
   if (receipt.status === "PAID") lines += 1
   if (receipt.status === "UNPAID") lines += 1
-  lines += 3 // spacing + "thanks" footer
+  lines += 2 + footerLineCount // spacing + footer message
   return lines
 }
 
@@ -31,7 +51,15 @@ export async function buildReceiptPdf(receipt: ReceiptData): Promise<Uint8Array>
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
-  const height = Math.max(300, estimateLines(receipt) * LINE + MARGIN * 2)
+  const footerSize = 9
+  const footerLines = wrapText(
+    receipt.footerMessage || "Thanks for your business!",
+    font,
+    footerSize,
+    PAGE_WIDTH - MARGIN * 2
+  )
+
+  const height = Math.max(300, estimateLines(receipt, footerLines.length) * LINE + MARGIN * 2)
   const page = pdfDoc.addPage([PAGE_WIDTH, height])
 
   let y = height - MARGIN
@@ -109,7 +137,9 @@ export async function buildReceiptPdf(receipt: ReceiptData): Promise<Uint8Array>
   }
 
   y -= LINE * 0.5
-  center("Thanks for your business!", 9, font, MUTED)
+  for (const line of footerLines) {
+    center(line, footerSize, font, MUTED)
+  }
 
   return pdfDoc.save()
 }

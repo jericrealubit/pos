@@ -9,6 +9,7 @@ import { getRangeBounds } from "@/lib/sales-date-range"
 import { formatMoney } from "@/lib/money"
 import { buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { EmptyState } from "@/components/empty-state"
 import { cn } from "@/lib/utils"
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
@@ -121,7 +122,11 @@ export default async function AdminDashboard() {
                 {formatMoney(owedCents, currency)}
               </div>
               {debtors.length === 0 ? (
-                <p className="mt-3 text-sm text-muted-foreground">No outstanding balances.</p>
+                <EmptyState
+                  icon={NotebookIcon}
+                  title="No outstanding balances"
+                  className="mt-3 border-0 p-0"
+                />
               ) : (
                 <ul className="mt-3 flex flex-col gap-1">
                   {debtors.slice(0, 5).map((c) => (
@@ -156,7 +161,11 @@ export default async function AdminDashboard() {
           </div>
           <div className="text-xs text-muted-foreground">At or below {threshold} on hand</div>
           {lowStock.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">Everything&rsquo;s well stocked.</p>
+            <EmptyState
+              icon={PackageIcon}
+              title="Everything's well stocked"
+              className="mt-3 border-0 p-0"
+            />
           ) : (
             <ul className="mt-3 flex flex-col gap-1">
               {lowStock.map((p) => (
@@ -198,7 +207,7 @@ export default async function AdminDashboard() {
           </Link>
         </div>
         {recentSales.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No sales yet.</p>
+          <EmptyState icon={ReceiptIcon} title="No sales yet" className="border-0 p-0" />
         ) : (
           <ul className="flex flex-col divide-y">
             {recentSales.map((s) => {

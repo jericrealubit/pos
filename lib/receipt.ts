@@ -14,6 +14,7 @@ export const TENDER_LABEL: Record<SaleWithItems["tender_type"], string> = {
 
 export type ReceiptData = {
   store: { name: string; address: string | null; phone: string | null; currency: string }
+  footerMessage: string | null
   reference: string
   createdAt: string
   status: SaleWithItems["status"]
@@ -36,6 +37,7 @@ export function buildReceiptData(sale: SaleWithItems, profile: Profile): Receipt
       phone: profile.stores.phone ?? null,
       currency: profile.stores.currency,
     },
+    footerMessage: profile.stores.receipt_footer_message ?? null,
     reference: sale.id.slice(0, 8).toUpperCase(),
     createdAt: sale.created_at,
     status: sale.status,

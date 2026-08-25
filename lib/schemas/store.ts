@@ -17,5 +17,6 @@ export const storeSettingsSchema = z.object({
     .trim()
     .regex(/^[A-Z]{3}$/, "Use a 3-letter currency code like AUD")
     .optional(),
+  receiptFooterMessage: z.string().trim().max(200).optional().or(z.literal("")),
 })
 export type StoreSettingsValues = z.infer<typeof storeSettingsSchema>

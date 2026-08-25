@@ -25,6 +25,7 @@ type Store = {
   phone: string | null
   low_stock_threshold: number
   currency: string
+  receipt_footer_message: string | null
   hasSales: boolean
 }
 
@@ -45,6 +46,7 @@ export function StoreSettingsForm({ store }: { store: Store }) {
       phone: store.phone ?? "",
       lowStockThreshold: String(store.low_stock_threshold),
       currency: store.currency,
+      receiptFooterMessage: store.receipt_footer_message ?? "",
     },
   })
 
@@ -128,6 +130,22 @@ export function StoreSettingsForm({ store }: { store: Store }) {
                 : "3-letter code, e.g. AUD, NZD, PHP, USD. This can only be changed before your first sale."}
             </FieldDescription>
             <FieldError errors={[errors.currency]} />
+          </FieldContent>
+        </Field>
+
+        <Field data-invalid={!!errors.receiptFooterMessage}>
+          <FieldLabel htmlFor="receiptFooterMessage">Receipt footer message</FieldLabel>
+          <FieldContent>
+            <Input
+              id="receiptFooterMessage"
+              placeholder="Thanks for your business!"
+              {...register("receiptFooterMessage")}
+            />
+            <FieldDescription>
+              Shown at the bottom of printed, downloaded, and emailed receipts. Leave blank for
+              the default.
+            </FieldDescription>
+            <FieldError errors={[errors.receiptFooterMessage]} />
           </FieldContent>
         </Field>
       </FieldGroup>

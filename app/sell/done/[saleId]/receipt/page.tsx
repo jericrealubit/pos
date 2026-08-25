@@ -94,7 +94,7 @@ export default async function SaleReceiptPage({
         )}
 
         <div className="mt-6 text-center text-xs text-neutral-600">
-          Thanks for your business!
+          {receipt.footerMessage || "Thanks for your business!"}
         </div>
       </div>
     </ReceiptAutoPrint>
