@@ -22,7 +22,7 @@ export function SiteFooter() {
       {/* Build credit — flame + smoke, aria-hidden. A 16px decorative badge, not
           motion in the reading path, so it animates unconditionally rather than
           deferring to prefers-reduced-motion. */}
-      <div className="relative flex items-center gap-2 self-start overflow-visible rounded-full border border-border bg-muted px-3.5 py-1.5 font-mono text-xs text-muted-foreground sm:self-auto">
+      <div className="relative flex items-center gap-2 overflow-visible rounded-full border border-border bg-muted px-3.5 py-1.5 font-mono text-xs text-muted-foreground sm:self-auto">
         <span
           aria-hidden="true"
           className="relative flex h-4 w-4 shrink-0 items-end justify-center overflow-visible"

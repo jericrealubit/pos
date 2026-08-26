@@ -88,12 +88,56 @@ export default function TermsPage() {
             and we&apos;ll arrange it.
           </p>
           <p>
-            <span className="font-medium text-foreground">Liability.</span> To the extent
-            permitted by law, WA AI Digital isn&apos;t liable for indirect or consequential
-            losses arising from your use of Counter. Nothing here excludes any guarantee,
-            warranty, or right you have under the Australian Consumer Law that can&apos;t
-            lawfully be excluded.
+            <span className="font-medium text-foreground">Liability and indemnity.</span> To the
+            maximum extent permitted by law, WA AI Digital is not liable for any indirect,
+            special, or consequential loss — including loss of data, loss of revenue, loss of
+            business opportunity, or loss of profits — arising out of or in connection with your
+            use of Counter.
           </p>
+          <p>
+            Where the Australian Consumer Law implies a non-excludable statutory guarantee into
+            these terms, our liability for any breach of that guarantee is limited, at our
+            absolute discretion, to:
+          </p>
+          <ul className="list-[lower-alpha] space-y-1 pl-5">
+            <li>the supplying of the services again; or</li>
+            <li>the payment of the cost of having the services supplied again.</li>
+          </ul>
+          <p>
+            By using Counter to record customer financial balances (the pay-later tabs), you
+            agree to indemnify WA AI Digital against any claims, damages, or losses arising from
+            your reliance on the app&apos;s data, or from any temporary unavailability or
+            inaccuracy of that data.
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Dispute resolution.</span> If a dispute
+            arises out of or relates to these terms or your use of Counter, neither party may
+            commence Tribunal or Court proceedings (except where urgent interlocutory relief is
+            sought) unless the following process has first been followed:
+          </p>
+          <ol className="list-decimal space-y-2 pl-5">
+            <li>
+              <span className="font-medium text-foreground">Notice.</span> The party claiming a
+              dispute must give written notice to the other party detailing the nature of the
+              dispute.
+            </li>
+            <li>
+              <span className="font-medium text-foreground">Negotiation.</span> On receipt of
+              that notice, both parties must engage in good-faith negotiations to resolve the
+              dispute within 14 days.
+            </li>
+            <li>
+              <span className="font-medium text-foreground">Mediation.</span> If the dispute
+              remains unresolved after 14 days, the parties must refer it to mediation in Perth,
+              Western Australia (or conducted virtually), managed by a mediator the parties agree
+              on. If they can&apos;t agree within 7 days, a mediator will be appointed by the
+              Chair of the Resolution Institute.
+            </li>
+            <li>
+              <span className="font-medium text-foreground">Costs.</span> Each party bears its
+              own legal costs; the mediator&apos;s costs are shared equally between the parties.
+            </li>
+          </ol>
           <p>
             <span className="font-medium text-foreground">Governing law.</span> These terms are
             governed by the laws of Western Australia, Australia.
