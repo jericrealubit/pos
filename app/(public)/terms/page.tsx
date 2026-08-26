@@ -67,10 +67,13 @@ export default function TermsPage() {
           </p>
           <p>
             <span className="font-medium text-foreground">If you stop paying.</span> When a
-            subscription lapses, the till stops ringing up new sales. Your products, sales
-            history and customer balances stay readable and exportable, and recording that a
-            customer has settled their tab keeps working — we don&apos;t lock you out of your own
-            records to collect payment. Contact us any time to switch selling back on.
+            subscription lapses, your store drops to the Free plan — the till keeps ringing up
+            sales, forever, at no cost. The only thing that pauses is starting{" "}
+            <em>new</em> pay-later tabs and other Premium features like reports and emailed
+            receipts; existing
+            tabs stay readable and can still be settled. Your products, sales history and customer
+            balances stay readable and exportable the whole time — we don&apos;t lock you out of
+            your own records to collect payment. Contact us any time to switch Premium back on.
           </p>
           <p>
             <span className="font-medium text-foreground">Availability.</span> Counter is
@@ -105,17 +108,21 @@ export default function TermsPage() {
             <span className="font-medium text-foreground">What we collect.</span> Your account
             details (name, email) via Supabase Auth, and the store data you enter to run
             Counter — products, categories, sales, and the names and balances of your own
-            customers.
+            customers. If you invite a staff member, we collect the email address you enter for
+            them; if you email a receipt to a customer, we collect the address you send it to.
           </p>
           <p>
             <span className="font-medium text-foreground">How it&apos;s used.</span> Solely to
-            provide the service: authenticating you, and scoping every store&apos;s data to that
-            store so it&apos;s never visible to another store on the platform.
+            provide the service: authenticating you, scoping every store&apos;s data to that store
+            so it&apos;s never visible to another store on the platform, and sending the specific
+            email you asked us to send (a staff invite or a receipt).
           </p>
           <p>
             <span className="font-medium text-foreground">Where it&apos;s stored.</span> In a
             Supabase-hosted Postgres database, with the application itself running on Cloudflare
-            Workers. We don&apos;t sell your data or your customers&apos; data to third parties.
+            Workers. Emails (staff invites and receipts) are sent through Resend, which briefly
+            processes the recipient&apos;s address and the email content on our behalf. We
+            don&apos;t sell your data or your customers&apos; data to third parties.
           </p>
           <p>
             <span className="font-medium text-foreground">Your customers&apos; data.</span> If

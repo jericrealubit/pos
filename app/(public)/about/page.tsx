@@ -19,6 +19,21 @@ const FUNCTIONALITY = [
     description:
       "A separate cross-store view for platform operators running Counter for more than one store, including the ability to pause a store's access.",
   },
+  {
+    title: "Sales tools",
+    description:
+      "Apply a discount, take cash/card/e-wallet payment with change calculated automatically, or hold a sale and come back to it later without losing the cart.",
+  },
+  {
+    title: "Reports & receipts",
+    description:
+      "Revenue, top-product, and sales-pattern charts, a book-aging view for overdue tabs, CSV exports, and receipts customers can take home as a print, a PDF, or an email.",
+  },
+  {
+    title: "Team accounts",
+    description:
+      "Invite staff by email with a role — owner, admin, or cashier — so every sale is stamped with who actually rang it up.",
+  },
 ]
 
 const STACK = [
@@ -46,6 +61,18 @@ const STACK = [
     name: "Cloudflare Workers",
     note: "Deployed via the OpenNext Cloudflare adapter",
   },
+  {
+    name: "Recharts",
+    note: "Revenue, product, and sales-pattern charts in the reports dashboard",
+  },
+  {
+    name: "pdf-lib + Resend",
+    note: "Generates downloadable PDF receipts, and emails them and staff invites",
+  },
+  {
+    name: "cmdk",
+    note: "Powers the admin command palette (⌘K)",
+  },
 ]
 
 export default function AboutPage() {
@@ -64,6 +91,14 @@ export default function AboutPage() {
           Beyond the till itself, an admin dashboard handles the day-to-day of running the store
           — products, categories, stock levels, and every customer&apos;s balance — while a
           separate super-admin console lets a platform operator oversee multiple stores at once.
+        </p>
+        <p className="mt-3 text-base text-muted-foreground">
+          The till itself is free forever — a Premium upgrade unlocks the pay-later book, reports,
+          and a few other conveniences. See{" "}
+          <a href="/pricing" className="font-medium text-primary hover:text-primary/80">
+            pricing
+          </a>{" "}
+          for details.
         </p>
       </div>
 

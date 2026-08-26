@@ -12,8 +12,15 @@ A mobile-first point of sale for a single retail store: scan a barcode, ring up 
 - **The pay-later book** — unpaid sales attach to a named customer and accumulate into an itemised running balance
 - **Admin dashboard** — product/category CRUD, customer balances, sortable/filterable/paginated tables
 - **Super-admin console** — cross-store view for platform operators, including pausing a store's access
+- **Freemium billing** — a 90-day trial, then Free (the till stays fully usable) or Premium (pay-later book, reports, emailed receipts), enforced by a single `paid_until` field (`lib/billing.ts`)
+- **Sales tools** — discounts, multi-tender checkout (cash/card/e-wallet) with change due, holding and resuming a sale
+- **Reports & receipts** — Recharts-based analytics, CSV exports, and PDF/emailed receipts with a store-configurable footer message
+- **Staff accounts** — email invites with role-based access (owner/admin/cashier)
+- **Installable** — a PWA manifest so the till can be added to a phone's home screen and launched full-screen
+- **Admin command palette** — ⌘K/Ctrl+K quick navigation and actions
 - **Four switchable themes**, including a dark "night till" mode, applied instantly with no flash on load
 - **Responsive till** — a real two-pane desktop layout for scanning + cart, alongside the original mobile-first flow
+- **Accessibility & resilience polish** — a skip link, `prefers-reduced-motion` support, styled error boundaries, and haptic scan feedback
 
 ## Tech stack
 
@@ -27,6 +34,10 @@ A mobile-first point of sale for a single retail store: scan a barcode, ring up 
 | Types | `supabase gen types typescript` | Generated into `lib/database.types.ts`, regenerated on every migration |
 | Tables | TanStack Table | Custom `DataTable`/`DataList` components — sorting, search, filtering, pagination |
 | Forms | react-hook-form + zod | Schemas in `lib/schemas`, reused for both client and server-side validation |
+| Charts | Recharts | Revenue, top-product, and sales-pattern charts in the reports dashboard |
+| PDFs | pdf-lib | Generates downloadable/emailed PDF receipts (`lib/receipt-pdf.ts`) |
+| Email | Resend | Staff invites and receipts, via a raw HTTP `fetch` (no SDK) — `lib/email/send.ts` |
+| Command palette | cmdk | Unstyled primitives behind the admin ⌘K palette (`components/ui/command.tsx`) |
 | Hosting | Cloudflare Workers | Via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare) (`@opennextjs/cloudflare`) |
 
 ## Getting started
@@ -43,6 +54,13 @@ A mobile-first point of sale for a single retail store: scan a barcode, ring up 
    NEXT_PUBLIC_SUPABASE_URL=
    NEXT_PUBLIC_SUPABASE_ANON_KEY=
    SUPABASE_SERVICE_ROLE_KEY=
+
+   # Optional — transactional email (staff invites, receipts). Features that
+   # send email degrade gracefully (e.g. staff invites fall back to a
+   # copy-link) if these are unset. Requires a Resend account with a
+   # verified sending domain.
+   RESEND_API_KEY=
+   RESEND_FROM=
    ```
 3. Link the Supabase CLI to your project and push the schema:
    ```bash
